@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · CERAS{% endblock %}
+{% block content %}
+
+<h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+  <div class="bg-white rounded-xl shadow p-4">
+    <p class="text-xs text-slate-500">Total Events</p>
+    <p class="text-2xl font-bold">{{ stats.total_events }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow p-4">
+    <p class="text-xs text-slate-500">Upcoming Events</p>
+    <p class="text-2xl font-bold text-blue-600">{{ stats.upcoming_events }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow p-4">
+    <p class="text-xs text-slate-500">Pending Requests</p>
+    <p class="text-2xl font-bold text-amber-600">{{ stats.pending_requests }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow p-4">
+    <p class="text-xs text-slate-500">Active Resources</p>
+    <p class="text-2xl font-bold text-emerald-600">{{ stats.active_resources }} / {{ stats.total_resources }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow p-4 col-span-2 md:col-span-1">
+    <p class="text-xs text-slate-500">Active Allocations</p>
+    <p class="text-2xl font-bold">{{ stats.active_allocations }}</p>
+  </div>
+</div>
+
+<div class="grid md:grid-cols-2 gap-6">
+  <div class="bg-white rounded-xl shadow p-5">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-semibold">Upcoming Events</h2>
+      <a href="{{ url_for('events.list_events') }}" class="text-sm text-blue-600 hover:underline">View all</a>
+    </div>
+    {% if upcoming_events %}
+      <ul class="divide-y">
+        {% for e in upcoming_events %}
+        <li class="py-2">
+          <p class="font-medium">{{ e.name }}</p>
+          <p class="text-xs text-slate-500">{{ e.start_time.strftime('%d %b %Y, %I:%M %p') }} · {{ e.status }}</p>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-sm text-slate-400">No upcoming events.</p>
+    {% endif %}
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-5">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-semibold">Pending Resource Requests</h2>
+      <a href="{{ url_for('requests.list_requests') }}" class="text-sm text-blue-600 hover:underline">View all</a>
+    </div>
+    {% if pending_requests %}
+      <ul class="divide-y">
+        {% for rr in pending_requests %}
+        <li class="py-2 flex justify-between items-center">
+          <div>
+            <p class="font-medium">{{ rr.event.name }}</p>
+            <p class="text-xs text-slate-500">{{ rr.start_time.strftime('%d %b, %I:%M %p') }} – {{ rr.end_time.strftime('%I:%M %p') }}</p>
+          </div>
+          <a href="{{ url_for('requests.view_request', request_id=rr.id) }}" class="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700">Review</a>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-sm text-slate-400">Nothing pending. 🎉</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="mt-8 flex gap-3 flex-wrap">
+  <a href="{{ url_for('events.new_event') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Event</a>
+  <a href="{{ url_for('resources.new_resource') }}" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700">+ Add Resource</a>
+  <a href="{{ url_for('requests.new_request') }}" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-700">+ Request Resources</a>
+</div>
+
+{% endblock %}

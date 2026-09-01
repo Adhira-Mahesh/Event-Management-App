@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Resources · CERAS{% endblock %}
+{% block content %}
+
+<div class="flex justify-between items-center mb-4">
+  <h1 class="text-2xl font-bold">Resources</h1>
+  <a href="{{ url_for('resources.new_resource') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Add Resource</a>
+</div>
+
+<form method="get" class="bg-white rounded-xl shadow p-4 mb-6 flex flex-wrap gap-3 items-end">
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Type</label>
+    <select name="type" class="border rounded-lg px-3 py-2 text-sm">
+      <option value="">All</option>
+      {% for t in types %}
+        <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Status</label>
+    <select name="active" class="border rounded-lg px-3 py-2 text-sm">
+      <option value="">All</option>
+      <option value="active" {% if active_filter == 'active' %}selected{% endif %}>Active</option>
+      <option value="inactive" {% if active_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+    </select>
+  </div>
+  <button class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700">Filter</button>
+  <a href="{{ url_for('resources.list_resources') }}" class="px-4 py-2 text-sm text-slate-500 hover:underline">Clear</a>
+</form>
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-100 text-left text-xs text-slate-500 uppercase">
+      <tr>
+        <th class="px-4 py-3">Name</th>
+        <th class="px-4 py-3">Type</th>
+        <th class="px-4 py-3">Capacity</th>
+        <th class="px-4 py-3">Status</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for r in resources %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3 font-medium">{{ r.name }}</td>
+        <td class="px-4 py-3">{{ r.type }}</td>
+        <td class="px-4 py-3">{{ r.capacity if r.capacity is not none else '—' }}</td>
+        <td class="px-4 py-3">
+          <span class="px-2 py-1 rounded-full text-xs font-medium {{ 'bg-emerald-100 text-emerald-700' if r.is_active else 'bg-red-100 text-red-700' }}">
+            {{ 'Active' if r.is_active else 'Inactive' }}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+          <a href="{{ url_for('resources.edit_resource', resource_id=r.id) }}" class="text-blue-600 hover:underline">Edit</a>
+          <form method="post" action="{{ url_for('resources.toggle_active', resource_id=r.id) }}" class="inline">
+            <button class="{{ 'text-red-600' if r.is_active else 'text-emerald-600' }} hover:underline">
+              {{ 'Deactivate' if r.is_active else 'Activate' }}
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">No resources found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

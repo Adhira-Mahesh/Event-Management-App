@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Request Resources · CERAS{% endblock %}
+{% block content %}
+
+<h1 class="text-2xl font-bold mb-6">Request Resources for an Event</h1>
+
+<form method="post" class="bg-white rounded-xl shadow p-6 max-w-3xl space-y-5">
+
+  <div>
+    <label class="block text-sm font-medium mb-1">Event</label>
+    <select name="event_id" class="w-full border rounded-lg px-3 py-2 text-sm" required>
+      <option value="">Select event…</option>
+      {% for e in events %}
+        <option value="{{ e.id }}">{{ e.name }} — {{ e.start_time.strftime('%d %b %Y') }} ({{ e.status }})</option>
+      {% endfor %}
+    </select>
+    {% if not events %}
+      <p class="text-xs text-amber-600 mt-1">No open events yet. <a href="{{ url_for('events.new_event') }}" class="underline">Create one first</a>.</p>
+    {% endif %}
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">Requested Start</label>
+      <input type="datetime-local" name="start_time" class="w-full border rounded-lg px-3 py-2 text-sm" required />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Requested End</label>
+      <input type="datetime-local" name="end_time" class="w-full border rounded-lg px-3 py-2 text-sm" required />
+    </div>
+  </div>
+
+  <div>
+    <div class="flex justify-between items-center mb-2">
+      <label class="block text-sm font-medium">Resources Needed</label>
+      <button type="button" id="add-row" class="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700">+ Add Resource</button>
+    </div>
+
+    <div id="item-rows" class="space-y-2"></div>
+    <p class="text-xs text-slate-400 mt-2">
+      Tip: leave "Min. capacity" blank for Auditorium/Laboratory to auto-use the event's expected attendance.
+      "Preferred resource" is optional — if it's unavailable or unsuitable, the system will try to allocate
+      any other suitable resource of the same type automatically.
+    </p>
+  </div>
+
+  <div class="flex gap-3 pt-2">
+    <button class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-emerald-700">Submit Request</button>
+    <a href="{{ url_for('requests.list_requests') }}" class="px-5 py-2 text-sm text-slate-500 hover:underline">Cancel</a>
+  </div>
+</form>
+
+<template id="row-template">
+  <div class="item-row flex flex-wrap gap-2 items-end bg-slate-50 border rounded-lg p-3">
+    <div>
+      <label class="block text-xs text-slate-500 mb-1">Type</label>
+      <select name="item_type[]" class="row-type border rounded-lg px-2 py-1.5 text-sm">
+        <option value="">Select…</option>
+        {% for t in resource_types %}
+          <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs text-slate-500 mb-1">Quantity</label>
+      <input type="number" min="1" value="1" name="item_quantity[]" class="w-20 border rounded-lg px-2 py-1.5 text-sm" />
+    </div>
+    <div>
+      <label class="block text-xs text-slate-500 mb-1">Min. capacity</label>
+      <input type="number" min="1" name="item_capacity[]" class="w-28 border rounded-lg px-2 py-1.5 text-sm" placeholder="optional" />
+    </div>
+    <div>
+      <label class="block text-xs text-slate-500 mb-1">Preferred resource</label>
+      <select name="item_preferred[]" class="row-preferred border rounded-lg px-2 py-1.5 text-sm">
+        <option value="">Any suitable</option>
+        {% for r in resources %}
+          <option value="{{ r.id }}" data-type="{{ r.type }}">{{ r.name }} ({{ r.type }}{% if r.capacity %}, cap {{ r.capacity }}{% endif %})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="button" class="remove-row text-red-500 text-xs hover:underline pb-2">Remove</button>
+  </div>
+</template>
+
+<script>
+  const rowsContainer = document.getElementById('item-rows');
+  const template = document.getElementById('row-template');
+
+  function addRow() {
+    const clone = template.content.cloneNode(true);
+    const row = clone.querySelector('.item-row');
+
+    const typeSelect = row.querySelector('.row-type');
+    const preferredSelect = row.querySelector('.row-preferred');
+    const allOptions = Array.from(preferredSelect.querySelectorAll('option'));
+
+    function filterPreferred() {
+      const t = typeSelect.value;
+      preferredSelect.innerHTML = '';
+      allOptions.forEach(opt => {
+        if (!opt.dataset.type || opt.dataset.type === t) {
+          preferredSelect.appendChild(opt.cloneNode(true));
+        }
+      });
+    }
+    typeSelect.addEventListener('change', filterPreferred);
+    filterPreferred();
+
+    row.querySelector('.remove-row').addEventListener('click', () => row.remove());
+    rowsContainer.appendChild(row);
+  }
+
+  document.getElementById('add-row').addEventListener('click', addRow);
+  addRow(); // start with one row
+</script>
+
+{% endblock %}

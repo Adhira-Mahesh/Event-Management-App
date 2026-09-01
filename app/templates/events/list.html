@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Events · CERAS{% endblock %}
+{% block content %}
+
+<div class="flex justify-between items-center mb-4">
+  <h1 class="text-2xl font-bold">Events</h1>
+  <a href="{{ url_for('events.new_event') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Event</a>
+</div>
+
+<form method="get" class="bg-white rounded-xl shadow p-4 mb-6 flex flex-wrap gap-3 items-end">
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Status</label>
+    <select name="status" class="border rounded-lg px-3 py-2 text-sm">
+      <option value="">All</option>
+      {% for s in statuses %}
+        <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Date (start on)</label>
+    <input type="date" name="date" value="{{ date_filter }}" class="border rounded-lg px-3 py-2 text-sm" />
+  </div>
+  <button class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700">Filter</button>
+  <a href="{{ url_for('events.list_events') }}" class="px-4 py-2 text-sm text-slate-500 hover:underline">Clear</a>
+</form>
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-100 text-left text-xs text-slate-500 uppercase">
+      <tr>
+        <th class="px-4 py-3">Event</th>
+        <th class="px-4 py-3">Organizer</th>
+        <th class="px-4 py-3">Attendance</th>
+        <th class="px-4 py-3">Start</th>
+        <th class="px-4 py-3">End</th>
+        <th class="px-4 py-3">Status</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for e in events %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3 font-medium">{{ e.name }}</td>
+        <td class="px-4 py-3">{{ e.organizer }}</td>
+        <td class="px-4 py-3">{{ e.expected_attendance }}</td>
+        <td class="px-4 py-3">{{ e.start_time.strftime('%d %b %Y, %I:%M %p') }}</td>
+        <td class="px-4 py-3">{{ e.end_time.strftime('%d %b %Y, %I:%M %p') }}</td>
+        <td class="px-4 py-3">
+          <span class="px-2 py-1 rounded-full text-xs font-medium
+            {% if e.status == 'Approved' %} bg-emerald-100 text-emerald-700
+            {% elif e.status == 'Pending' %} bg-amber-100 text-amber-700
+            {% elif e.status in ['Rejected', 'Cancelled'] %} bg-red-100 text-red-700
+            {% elif e.status == 'Completed' %} bg-slate-200 text-slate-600
+            {% else %} bg-blue-100 text-blue-700 {% endif %}">
+            {{ e.status }}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+          <a href="{{ url_for('events.edit_event', event_id=e.id) }}" class="text-blue-600 hover:underline">Edit</a>
+          {% if e.status not in ['Cancelled', 'Completed'] %}
+          <form method="post" action="{{ url_for('events.cancel_event', event_id=e.id) }}" class="inline"
+                onsubmit="return confirm('Cancel this event and release its resources?');">
+            <button class="text-red-600 hover:underline">Cancel</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">No events found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Request #{{ rr.id }} · CERAS{% endblock %}
+{% block content %}
+
+<div class="flex justify-between items-start mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">Request #{{ rr.id }} — {{ rr.event.name }}</h1>
+    <p class="text-sm text-slate-500">{{ rr.start_time.strftime('%d %b %Y, %I:%M %p') }} – {{ rr.end_time.strftime('%I:%M %p') }}</p>
+  </div>
+  <span class="px-3 py-1 rounded-full text-sm font-medium
+    {% if rr.status == 'Approved' %} bg-emerald-100 text-emerald-700
+    {% elif rr.status == 'Pending' %} bg-amber-100 text-amber-700
+    {% else %} bg-red-100 text-red-700 {% endif %}">
+    {{ rr.status }}
+  </span>
+</div>
+
+<div class="bg-white rounded-xl shadow p-5 mb-6">
+  <h2 class="font-semibold mb-3">Requested Items</h2>
+  <table class="w-full text-sm">
+    <thead class="text-left text-xs text-slate-500 uppercase border-b">
+      <tr><th class="py-2">Type</th><th class="py-2">Quantity</th><th class="py-2">Min. Capacity</th><th class="py-2">Preferred</th></tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for it in rr.items %}
+      <tr>
+        <td class="py-2">{{ it.resource_type }}</td>
+        <td class="py-2">{{ it.quantity }}</td>
+        <td class="py-2">{{ it.min_capacity or '—' }}</td>
+        <td class="py-2">{{ it.preferred_resource.name if it.preferred_resource else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if rr.status == 'Approved' %}
+<div class="bg-white rounded-xl shadow p-5 mb-6">
+  <h2 class="font-semibold mb-3">Allocated Resources</h2>
+  <table class="w-full text-sm">
+    <thead class="text-left text-xs text-slate-500 uppercase border-b">
+      <tr><th class="py-2">Resource</th><th class="py-2">Type</th><th class="py-2">Window</th><th class="py-2">Status</th><th class="py-2"></th></tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for a in rr.allocations %}
+      <tr>
+        <td class="py-2 font-medium">{{ a.resource.name }}</td>
+        <td class="py-2">{{ a.resource.type }}</td>
+        <td class="py-2">{{ a.start_time.strftime('%d %b, %I:%M %p') }} – {{ a.end_time.strftime('%I:%M %p') }}</td>
+        <td class="py-2">
+          <span class="px-2 py-0.5 rounded-full text-xs {{ 'bg-emerald-100 text-emerald-700' if a.status == 'Allocated' else 'bg-slate-200 text-slate-500' }}">{{ a.status }}</span>
+        </td>
+        <td class="py-2 text-right">
+          {% if a.status == 'Allocated' %}
+          <form method="post" action="{{ url_for('requests.cancel_single_allocation', allocation_id=a.id) }}"
+                onsubmit="return confirm('Release this specific resource?');">
+            <button class="text-red-600 text-xs hover:underline">Release</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if rr.status == 'Rejected' and rr.rejection_reason %}
+<div class="bg-red-50 border border-red-200 rounded-xl p-5 mb-6">
+  <h2 class="font-semibold text-red-700 mb-2">Why this request could not be fulfilled</h2>
+  <p class="text-sm text-red-700">{{ rr.rejection_reason }}</p>
+</div>
+{% endif %}
+
+<div class="flex gap-3">
+  {% if rr.status == 'Pending' %}
+  <form method="post" action="{{ url_for('requests.approve_request', request_id=rr.id) }}">
+    <button class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-emerald-700">Approve &amp; Allocate</button>
+  </form>
+  <form method="post" action="{{ url_for('requests.reject_request', request_id=rr.id) }}"
+        onsubmit="return confirm('Reject this request?');">
+    <input type="hidden" name="reason" value="Rejected by admin." />
+    <button class="bg-red-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-red-700">Reject</button>
+  </form>
+  {% endif %}
+
+  {% if rr.status in ['Pending', 'Approved'] %}
+  <form method="post" action="{{ url_for('requests.cancel_request', request_id=rr.id) }}"
+        onsubmit="return confirm('Cancel this whole request and release any allocated resources?');">
+    <button class="bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm hover:bg-slate-300">Cancel Request</button>
+  </form>
+  {% endif %}
+
+  <a href="{{ url_for('requests.list_requests') }}" class="px-5 py-2 text-sm text-slate-500 hover:underline">Back to list</a>
+</div>
+
+{% endblock %}

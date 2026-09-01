@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}College Event Resource Allocation{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <nav class="bg-slate-900 text-white shadow">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex items-center justify-between h-14">
+        <a href="{{ url_for('dashboard.index') }}" class="font-semibold tracking-tight text-lg">
+          🎓 CERAS
+        </a>
+        <div class="flex gap-1 text-sm">
+          <a href="{{ url_for('dashboard.index') }}" class="px-3 py-2 rounded hover:bg-slate-700">Dashboard</a>
+          <a href="{{ url_for('events.list_events') }}" class="px-3 py-2 rounded hover:bg-slate-700">Events</a>
+          <a href="{{ url_for('resources.list_resources') }}" class="px-3 py-2 rounded hover:bg-slate-700">Resources</a>
+          <a href="{{ url_for('requests.list_requests') }}" class="px-3 py-2 rounded hover:bg-slate-700">Requests</a>
+          <a href="{{ url_for('requests.check_availability') }}" class="px-3 py-2 rounded hover:bg-slate-700">Availability</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for category, message in messages %}
+            <div class="px-4 py-3 rounded-lg text-sm border
+              {% if category == 'error' %} bg-red-50 text-red-700 border-red-200
+              {% elif category == 'warning' %} bg-amber-50 text-amber-700 border-amber-200
+              {% else %} bg-emerald-50 text-emerald-700 border-emerald-200 {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="text-center text-xs text-slate-400 py-4">
+    College Event Resource Allocation System
+  </footer>
+</body>
+</html>

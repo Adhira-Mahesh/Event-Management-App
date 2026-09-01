@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Resource Requests · CERAS{% endblock %}
+{% block content %}
+
+<div class="flex justify-between items-center mb-4">
+  <h1 class="text-2xl font-bold">Resource Requests</h1>
+  <a href="{{ url_for('requests.new_request') }}" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-700">+ Request Resources</a>
+</div>
+
+<form method="get" class="bg-white rounded-xl shadow p-4 mb-6 flex flex-wrap gap-3 items-end">
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Status</label>
+    <select name="status" class="border rounded-lg px-3 py-2 text-sm">
+      <option value="">All</option>
+      {% for s in statuses %}
+        <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700">Filter</button>
+  <a href="{{ url_for('requests.list_requests') }}" class="px-4 py-2 text-sm text-slate-500 hover:underline">Clear</a>
+</form>
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-100 text-left text-xs text-slate-500 uppercase">
+      <tr>
+        <th class="px-4 py-3">Event</th>
+        <th class="px-4 py-3">Window</th>
+        <th class="px-4 py-3">Items</th>
+        <th class="px-4 py-3">Status</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for rr in requests %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3 font-medium">{{ rr.event.name }}</td>
+        <td class="px-4 py-3">{{ rr.start_time.strftime('%d %b, %I:%M %p') }} – {{ rr.end_time.strftime('%I:%M %p') }}</td>
+        <td class="px-4 py-3">
+          {% for it in rr.items %}{{ it.quantity }}x {{ it.resource_type }}{% if not loop.last %}, {% endif %}{% endfor %}
+        </td>
+        <td class="px-4 py-3">
+          <span class="px-2 py-1 rounded-full text-xs font-medium
+            {% if rr.status == 'Approved' %} bg-emerald-100 text-emerald-700
+            {% elif rr.status == 'Pending' %} bg-amber-100 text-amber-700
+            {% else %} bg-red-100 text-red-700 {% endif %}">
+            {{ rr.status }}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-right">
+          <a href="{{ url_for('requests.view_request', request_id=rr.id) }}" class="text-blue-600 hover:underline">View</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">No resource requests found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

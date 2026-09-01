@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Something Went Wrong · CERAS{% endblock %}
+{% block content %}
+<div class="text-center py-20">
+  <p class="text-6xl mb-4">⚠️</p>
+  <h1 class="text-2xl font-bold mb-2">Something went wrong</h1>
+  <p class="text-slate-500 mb-6">An unexpected error occurred. Please try again, or go back to the dashboard.</p>
+  <a href="{{ url_for('dashboard.index') }}" class="bg-slate-900 text-white px-5 py-2 rounded-lg text-sm hover:bg-slate-700">Back to Dashboard</a>
+</div>
+{% endblock %}
