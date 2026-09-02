@@ -83,25 +83,50 @@
           <td class="px-6 py-4 text-xs text-slate-600">
             {{ rr.submitter.name if rr.submitter else rr.event.organizer }}
           </td>
-          <td class="px-6 py-4">
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
-              {% if rr.status == 'Approved' %} bg-emerald-100 text-emerald-800
-              {% elif rr.status == 'Pending' %} bg-amber-100 text-amber-800
-              {% elif rr.status == 'Rejected' %} bg-rose-100 text-rose-800
-              {% else %} bg-slate-100 text-slate-700 {% endif %}">
-              <span class="w-1.5 h-1.5 rounded-full 
-                {% if rr.status == 'Approved' %} bg-emerald-500
-                {% elif rr.status == 'Pending' %} bg-amber-500
-                {% elif rr.status == 'Rejected' %} bg-rose-500
-                {% else %} bg-slate-400 {% endif %}"></span>
-              {{ rr.status }}
-            </span>
-          </td>
+         <td class="px-6 py-4">
+  <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold
+    {% if rr.status == 'Approved' %}
+      bg-emerald-100 text-emerald-800
+    {% elif rr.status == 'Pending' %}
+      bg-amber-100 text-amber-800
+    {% elif rr.status == 'Rejected' %}
+      bg-rose-100 text-rose-800
+    {% else %}
+      bg-slate-100 text-slate-700
+    {% endif %}">
+
+
+<span class="w-1.5 h-1.5 rounded-full shrink-0
+  {% if rr.status == 'Approved' %}
+    bg-emerald-500
+  {% elif rr.status == 'Pending' %}
+    bg-amber-500
+  {% elif rr.status == 'Rejected' %}
+    bg-rose-500
+  {% else %}
+    bg-slate-400
+  {% endif %}">
+</span>
+
+<span>{{ rr.status }}</span>
+
+
+  </span>
+</td>
+
           <td class="px-6 py-4 text-right">
-            <a href="{{ url_for('requests.view_request', request_id=rr.id) }}" 
-               class="inline-flex items-center gap-1 text-xs font-semibold {{ 'bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl shadow-sm' if current_user.is_admin and rr.status == 'Pending' else 'text-indigo-600 hover:underline' }}">
-              {{ 'Review Decision' if current_user.is_admin and rr.status == 'Pending' else 'View Details →' }}
-            </a>
+          <a href="{{ url_for('requests.view_request', request_id=rr.id) }}"
+class="inline-flex items-center justify-center text-xs font-semibold
+{{ 'bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg shadow-sm'
+   if current_user.is_admin and rr.status == 'Pending'
+   else 'text-indigo-600 hover:text-indigo-800' }}">
+
+{{ 'Review Decision'
+if current_user.is_admin and rr.status == 'Pending'
+else 'View Details' }}
+
+</a>
+
           </td>
         </tr>
         {% else %}

@@ -5,7 +5,15 @@
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
   <div>
     <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 mb-1">
-      <span>🛡️</span> Administrator Control Panel
+      <span class="inline-flex items-center">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"/>
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M9 12l2 2 4-4"/>
+  </svg>
+</span>
+ Administrator Control Panel
     </div>
     <h1 class="text-3xl font-display font-bold text-slate-900">User &amp; Role Management</h1>
     <p class="text-xs text-slate-500 mt-0.5">Manage registered campus accounts, grant Administrator privileges, and toggle account access.</p>
@@ -22,7 +30,14 @@
   <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
     <div class="flex items-center justify-between">
       <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Users</span>
-      <span class="p-2 rounded-xl bg-slate-100 text-slate-700 text-base">👥</span>
+      <span class="p-2 rounded-xl bg-slate-100 text-slate-700 text-base"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+        d="M16 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/>
+  <circle cx="9.5" cy="7" r="4" stroke-width="1.8"/>
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+        d="M16 3.5a4 4 0 010 7.5M21 21v-2a4 4 0 00-3-3.87"/>
+</svg>
+</span>
     </div>
     <p class="text-2xl font-display font-bold text-slate-900 mt-2">{{ stats.total_users }}</p>
     <p class="text-[11px] text-slate-400 mt-0.5">All registered accounts</p>
