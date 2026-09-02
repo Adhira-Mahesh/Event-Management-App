@@ -9,15 +9,28 @@ def create_app(config_class=Config):
 
     db.init_app(app)
 
+    from app.routes.auth import auth_bp
     from app.routes.dashboard import dashboard_bp
     from app.routes.events import events_bp
     from app.routes.resources import resources_bp
     from app.routes.requests import requests_bp
+    from app.routes.admin_users import admin_users_bp
+    from app.routes.calendar import calendar_bp
+    from app.utils import get_current_user
 
+    app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(events_bp, url_prefix="/events")
     app.register_blueprint(resources_bp, url_prefix="/resources")
     app.register_blueprint(requests_bp, url_prefix="/requests")
+    app.register_blueprint(admin_users_bp)
+    app.register_blueprint(calendar_bp)
+
+    @app.context_processor
+    def inject_auth_context():
+        return {
+            "current_user": get_current_user()
+        }
 
     register_error_handlers(app)
 
@@ -25,6 +38,7 @@ def create_app(config_class=Config):
         db.create_all()
 
     return app
+
 
 
 def register_error_handlers(app):

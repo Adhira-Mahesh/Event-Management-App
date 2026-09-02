@@ -1,84 +1,130 @@
 {% extends "base.html" %}
-{% block title %}Request Resources · CERAS{% endblock %}
+{% block title %}Request Resources for an Event · CERAS{% endblock %}
 {% block content %}
 
-<h1 class="text-2xl font-bold mb-6">Request Resources for an Event</h1>
-
-<form method="post" class="bg-white rounded-xl shadow p-6 max-w-3xl space-y-5">
-
-  <div>
-    <label class="block text-sm font-medium mb-1">Event</label>
-    <select name="event_id" class="w-full border rounded-lg px-3 py-2 text-sm" required>
-      <option value="">Select event…</option>
-      {% for e in events %}
-        <option value="{{ e.id }}">{{ e.name }} — {{ e.start_time.strftime('%d %b %Y') }} ({{ e.status }})</option>
-      {% endfor %}
-    </select>
-    {% if not events %}
-      <p class="text-xs text-amber-600 mt-1">No open events yet. <a href="{{ url_for('events.new_event') }}" class="underline">Create one first</a>.</p>
-    {% endif %}
-  </div>
-
-  <div class="grid grid-cols-2 gap-4">
-    <div>
-      <label class="block text-sm font-medium mb-1">Requested Start</label>
-      <input type="datetime-local" name="start_time" class="w-full border rounded-lg px-3 py-2 text-sm" required />
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1">Requested End</label>
-      <input type="datetime-local" name="end_time" class="w-full border rounded-lg px-3 py-2 text-sm" required />
-    </div>
-  </div>
-
-  <div>
-    <div class="flex justify-between items-center mb-2">
-      <label class="block text-sm font-medium">Resources Needed</label>
-      <button type="button" id="add-row" class="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700">+ Add Resource</button>
+<div class="max-w-3xl mx-auto my-6">
+  <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-10">
+    
+    <div class="mb-6">
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 mb-1">
+        <span> </span> Multi-Item Resource Allocation Request
+      </div>
+      <h2 class="font-display text-2xl font-bold text-slate-900">Request Resources for Campus Event</h2>
+      <p class="text-xs text-slate-500 mt-1">Select an event, set your booking schedule, and bundle all required facilities and AV devices.</p>
     </div>
 
-    <div id="item-rows" class="space-y-2"></div>
-    <p class="text-xs text-slate-400 mt-2">
-      Tip: leave "Min. capacity" blank for Auditorium/Laboratory to auto-use the event's expected attendance.
-      "Preferred resource" is optional — if it's unavailable or unsuitable, the system will try to allocate
-      any other suitable resource of the same type automatically.
-    </p>
-  </div>
+    <form method="post" class="space-y-6">
 
-  <div class="flex gap-3 pt-2">
-    <button class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-emerald-700">Submit Request</button>
-    <a href="{{ url_for('requests.list_requests') }}" class="px-5 py-2 text-sm text-slate-500 hover:underline">Cancel</a>
-  </div>
-</form>
+      <!-- Event Picker -->
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Select Event</label>
+        <select name="event_id" required 
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-slate-50/50 focus:bg-white">
+          <option value="">Select an open event…</option>
+          {% for e in events %}
+            <option value="{{ e.id }}">{{ e.name }} — {{ e.start_time.strftime('%d %b %Y') }} ({{ e.status }})</option>
+          {% endfor %}
+        </select>
+        {% if not events %}
+          <p class="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200 mt-2">
+            No active events available. <a href="{{ url_for('events.new_event') }}" class="font-semibold underline">Create a new event first →</a>
+          </p>
+        {% endif %}
+      </div>
 
+      <!-- Time Window -->
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Requested Start Time</label>
+          <input type="datetime-local" name="start_time" required
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-slate-50/50 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Requested End Time</label>
+          <input type="datetime-local" name="end_time" required
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-slate-50/50 focus:bg-white" />
+        </div>
+      </div>
+
+      <!-- Resource Rows Builder -->
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700">Required Resources</label>
+            <p class="text-[11px] text-slate-400">Add all facilities and hardware items needed for this event</p>
+          </div>
+          <button type="button" id="add-row" 
+                  class="inline-flex items-center gap-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-xl shadow-sm transition-all">
+            <span>+ Add Item</span>
+          </button>
+        </div>
+
+        <div id="item-rows" class="space-y-3"></div>
+
+        <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 mt-3 text-xs text-indigo-900 space-y-1">
+          <p class="font-semibold text-indigo-950">💡 Automatic Conflict &amp; Suitability Protection:</p>
+          <ul class="list-disc list-inside space-y-0.5 text-indigo-800/90 text-[11px]">
+            <li>If "Min. capacity" is left blank for Auditoriums/Labs, it defaults to the event's expected attendance.</li>
+            <li>Specifying a "Preferred resource" is optional — if it is booked, the system automatically checks for alternative available units of the same type.</li>
+            <li><strong>All-or-Nothing Guarantee:</strong> If any requested item cannot be fully satisfied, no partial resources are locked.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex gap-3 pt-4 border-t border-slate-100">
+        <button type="submit" 
+                class="flex-1 py-3 px-4 rounded-xl font-semibold text-xs text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 hover:shadow-emerald-600/30 transition-all flex items-center justify-center gap-1.5">
+          <span>Submit Request for Approval</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+        <a href="{{ url_for('requests.list_requests') }}" 
+           class="px-5 py-3 rounded-xl border border-slate-300 text-xs text-slate-600 hover:bg-slate-50 font-medium text-center">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<!-- Dynamic Row Template -->
 <template id="row-template">
-  <div class="item-row flex flex-wrap gap-2 items-end bg-slate-50 border rounded-lg p-3">
-    <div>
-      <label class="block text-xs text-slate-500 mb-1">Type</label>
-      <select name="item_type[]" class="row-type border rounded-lg px-2 py-1.5 text-sm">
-        <option value="">Select…</option>
+  <div class="item-row bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 flex flex-wrap gap-3 items-end shadow-sm">
+    <div class="flex-1 min-w-[130px]">
+      <label class="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Resource Category</label>
+      <select name="item_type[]" class="row-type w-full border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
+        <option value="">Select category…</option>
         {% for t in resource_types %}
           <option value="{{ t }}">{{ t }}</option>
         {% endfor %}
       </select>
     </div>
-    <div>
-      <label class="block text-xs text-slate-500 mb-1">Quantity</label>
-      <input type="number" min="1" value="1" name="item_quantity[]" class="w-20 border rounded-lg px-2 py-1.5 text-sm" />
+
+    <div class="w-20">
+      <label class="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Quantity</label>
+      <input type="number" min="1" value="1" name="item_quantity[]" class="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" required />
     </div>
-    <div>
-      <label class="block text-xs text-slate-500 mb-1">Min. capacity</label>
-      <input type="number" min="1" name="item_capacity[]" class="w-28 border rounded-lg px-2 py-1.5 text-sm" placeholder="optional" />
+
+    <div class="w-28">
+      <label class="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Min. Capacity</label>
+      <input type="number" min="1" name="item_capacity[]" placeholder="Auto" class="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
     </div>
-    <div>
-      <label class="block text-xs text-slate-500 mb-1">Preferred resource</label>
-      <select name="item_preferred[]" class="row-preferred border rounded-lg px-2 py-1.5 text-sm">
-        <option value="">Any suitable</option>
+
+    <div class="flex-1 min-w-[150px]">
+      <label class="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Preferred Specific Resource</label>
+      <select name="item_preferred[]" class="row-preferred w-full border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <option value="">Any suitable available</option>
         {% for r in resources %}
           <option value="{{ r.id }}" data-type="{{ r.type }}">{{ r.name }} ({{ r.type }}{% if r.capacity %}, cap {{ r.capacity }}{% endif %})</option>
         {% endfor %}
       </select>
     </div>
-    <button type="button" class="remove-row text-red-500 text-xs hover:underline pb-2">Remove</button>
+
+    <button type="button" class="remove-row text-rose-500 hover:text-rose-700 text-xs font-semibold p-2 hover:bg-rose-50 rounded-xl transition-colors">
+      Remove
+    </button>
   </div>
 </template>
 
@@ -106,12 +152,19 @@
     typeSelect.addEventListener('change', filterPreferred);
     filterPreferred();
 
-    row.querySelector('.remove-row').addEventListener('click', () => row.remove());
+    row.querySelector('.remove-row').addEventListener('click', () => {
+      if (document.querySelectorAll('.item-row').length > 1) {
+        row.remove();
+      } else {
+        alert('A request must contain at least one resource item.');
+      }
+    });
+    
     rowsContainer.appendChild(row);
   }
 
   document.getElementById('add-row').addEventListener('click', addRow);
-  addRow(); // start with one row
+  addRow(); // start with one default row
 </script>
 
 {% endblock %}

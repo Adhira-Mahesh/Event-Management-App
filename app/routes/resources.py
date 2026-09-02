@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.extensions import db
 from app.models import Resource, RESOURCE_TYPES, CAPACITY_APPLICABLE_TYPES
-from app.utils import parse_int
+from app.utils import parse_int, login_required, admin_required
 
 resources_bp = Blueprint("resources", __name__, template_folder="../templates/resources")
 
@@ -34,8 +34,11 @@ def _validate_resource_fields(form):
     return data, errors
 
 
+@resources_bp.route("")
 @resources_bp.route("/")
+@login_required
 def list_resources():
+
     type_filter = request.args.get("type", "")
     active_filter = request.args.get("active", "")
 
@@ -58,6 +61,7 @@ def list_resources():
 
 
 @resources_bp.route("/new", methods=["GET", "POST"])
+@admin_required
 def new_resource():
     if request.method == "POST":
         data, errors = _validate_resource_fields(request.form)
@@ -70,13 +74,14 @@ def new_resource():
         resource = Resource(**data)
         db.session.add(resource)
         db.session.commit()
-        flash(f'Resource "{resource.name}" added.', "success")
+        flash(f'Resource "{resource.name}" added successfully.', "success")
         return redirect(url_for("resources.list_resources"))
 
     return render_template("resources/form.html", resource=None, types=RESOURCE_TYPES, mode="create")
 
 
 @resources_bp.route("/<int:resource_id>/edit", methods=["GET", "POST"])
+@admin_required
 def edit_resource(resource_id):
     resource = Resource.query.get_or_404(resource_id)
 
@@ -92,13 +97,14 @@ def edit_resource(resource_id):
         resource.type = data["type"]
         resource.capacity = data["capacity"]
         db.session.commit()
-        flash(f'Resource "{resource.name}" updated.', "success")
+        flash(f'Resource "{resource.name}" updated successfully.', "success")
         return redirect(url_for("resources.list_resources"))
 
     return render_template("resources/form.html", resource=resource, types=RESOURCE_TYPES, mode="edit")
 
 
 @resources_bp.route("/<int:resource_id>/toggle-active", methods=["POST"])
+@admin_required
 def toggle_active(resource_id):
     resource = Resource.query.get_or_404(resource_id)
     resource.is_active = not resource.is_active
@@ -106,3 +112,4 @@ def toggle_active(resource_id):
     state = "activated" if resource.is_active else "deactivated"
     flash(f'Resource "{resource.name}" {state}.', "success")
     return redirect(url_for("resources.list_resources"))
+

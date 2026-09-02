@@ -1,40 +1,71 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Edit' if mode == 'edit' else 'New' }} Resource · CERAS{% endblock %}
+{% block title %}{{ 'Add New Resource' if mode == 'create' else 'Edit Resource' }} · CERAS{% endblock %}
 {% block content %}
 
-<h1 class="text-2xl font-bold mb-6">{{ 'Edit Resource' if mode == 'edit' else 'Add Resource' }}</h1>
+<div class="max-w-xl mx-auto my-6">
+  <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-10">
+    
+    <div class="mb-6">
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 mb-1">
+        <span>🛡️</span> Administrator Control
+      </div>
+      <h2 class="font-display text-2xl font-bold text-slate-900">
+        {{ 'Add New Campus Resource' if mode == 'create' else 'Edit Campus Resource' }}
+      </h2>
+      <p class="text-xs text-slate-500 mt-1">Configure facility specifications, laboratory setups, or AV equipment.</p>
+    </div>
 
-<form method="post" class="bg-white rounded-xl shadow p-6 max-w-lg space-y-4">
-  <div>
-    <label class="block text-sm font-medium mb-1">Name</label>
-    <input type="text" name="name" value="{{ resource.name if resource else '' }}"
-           placeholder="e.g. Main Auditorium, Mic Unit 3"
-           class="w-full border rounded-lg px-3 py-2 text-sm" required />
-  </div>
+    <form method="post" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Resource Name</label>
+        <input type="text" name="name" value="{{ resource.name if resource else '' }}" required autofocus
+               placeholder="e.g. Science Auditorium 101 or 4K Laser Projector Unit 3"
+               class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-slate-50/50 focus:bg-white" />
+      </div>
 
-  <div>
-    <label class="block text-sm font-medium mb-1">Type</label>
-    <select name="type" class="w-full border rounded-lg px-3 py-2 text-sm" required>
-      <option value="">Select type…</option>
-      {% for t in types %}
-        <option value="{{ t }}" {% if resource and resource.type == t %}selected{% endif %}>{{ t }}</option>
-      {% endfor %}
-    </select>
-  </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Resource Type</label>
+          <select name="type" required
+                  class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-slate-50/50 focus:bg-white">
+            <option value="">Select type…</option>
+            {% for t in types %}
+              <option value="{{ t }}" {% if resource and resource.type == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-  <div>
-    <label class="block text-sm font-medium mb-1">Capacity <span class="text-slate-400 font-normal">(required for Auditorium / Laboratory)</span></label>
-    <input type="number" min="1" name="capacity"
-           value="{{ resource.capacity if resource and resource.capacity is not none else '' }}"
-           class="w-full border rounded-lg px-3 py-2 text-sm" />
-  </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Capacity (People / Seats)</label>
+          <input type="number" min="1" name="capacity" value="{{ resource.capacity if resource and resource.capacity is not none else '' }}"
+                 placeholder="Required for halls/labs"
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-slate-50/50 focus:bg-white" />
+          <p class="text-[10px] text-slate-400 mt-1">Auditoriums and Laboratories require numeric capacity.</p>
+        </div>
+      </div>
 
-  <div class="flex gap-3 pt-2">
-    <button class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700">
-      {{ 'Save Changes' if mode == 'edit' else 'Add Resource' }}
-    </button>
-    <a href="{{ url_for('resources.list_resources') }}" class="px-5 py-2 text-sm text-slate-500 hover:underline">Cancel</a>
+      {% if mode == 'create' %}
+      <div class="pt-2">
+        <label class="inline-flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="is_active" checked class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
+          <span class="text-xs text-slate-700 font-medium">Activate immediately for event booking</span>
+        </label>
+      </div>
+      {% endif %}
+
+      <div class="flex gap-3 pt-4 border-t border-slate-100">
+        <button type="submit" 
+                class="flex-1 py-2.5 px-4 rounded-xl font-semibold text-xs text-white bg-slate-900 hover:bg-slate-800 shadow-md transition-all">
+          {{ 'Save Resource' if mode == 'create' else 'Update Resource' }}
+        </button>
+        <a href="{{ url_for('resources.list_resources') }}" 
+           class="px-4 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-600 hover:bg-slate-50 font-medium text-center">
+          Cancel
+        </a>
+      </div>
+    </form>
+
   </div>
-</form>
+</div>
 
 {% endblock %}

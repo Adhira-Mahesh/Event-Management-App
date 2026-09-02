@@ -1,35 +1,62 @@
-# College Event Resource Allocation System (CERAS)
+# College Event Resource Allocation System (CERAS)   
 
-A Flask + SQLAlchemy + SQLite web app for managing college events and shared
-resources (auditoriums, labs, projectors, microphones, cameras, computers),
-with automatic conflict detection, suitability checks, alternative-resource
-suggestions, and an all-or-nothing approval/allocation workflow.
+A Flask + SQLAlchemy + SQLite web portal for campus event and resource management featuring **Role-Based Access Control (RBAC)** across 2 dedicated roles, **Session-Based Authentication (Login & Student Signup)**, **Interactive 7-Day Visual Booking Schedule Calendar**, and an **All-or-Nothing Resource Allocation Engine** with   conflict detection and alternative suggestions.
+
+---
+
+## 🛡️ Role-Based Access Control (2 Dedicated Roles)
+
+### 1. Administrator (`admin`)
+- **Reviews Pending Resource Requests**: Full approval and rejection decision controls with custom feedback reasons and single-allocation cancellation.
+- **Manages Campus Facilities Equipment**: Add, edit, activate, and deactivate college facilities, laboratories, and AV equipment.
+- **Manages Registered User Accounts & Roles**: Accesses the Admin User Management panel to promote/demote users (`admin` $\leftrightarrow$ `student_organiser`) and toggle account active status.
+
+### 2. Student Organiser (`student_organiser`)
+- **Creates & Manages Campus Events**: Create, edit, and manage department/club events.
+- **Submits Multi-Item Resource Allocation Requests**: Bundle multi-item hardware & room requests (e.g. 1x Auditorium + 2x Microphones + 1x 4K Projector) with all-or-nothing allocation guarantees.
+- **7-Day Visual Booking Schedule Calendar**: Explores confirmed daily time slots and checks resource availability in real-time.
+
+---
+
+## 🔑 Default Seed Credentials for Quick Testing
+
+| Role | Email | Password | Assigned Name / Department |
+| :--- | :--- | :--- | :--- |
+| **🛡️ Administrator** | `admin@college.edu` | `admin123` | Dr. Eleanor Vance (Campus Administration) |
+| **   Student Organiser** | `alex.cs@college.edu` | `student123` | Alex Rivera (Computer Science Society) |
+| **   Student Organiser** | `sarah.arts@college.edu` | `student123` | Sarah Chen (Fine Arts & Cultural Club) |
+
+> *Tip: The login page includes 1-click Quick Demo buttons for instant evaluation.*
+
+---
 
 ## Tech Stack
 
-Python 3.10+, Flask, Flask-SQLAlchemy, SQLite, Jinja2, Tailwind CSS (via CDN), vanilla JS.
+Python 3.10+, Flask, Flask-SQLAlchemy, Werkzeug, SQLite, Jinja2, Tailwind CSS, vanilla JS, Inter & Outfit Google Fonts.
 
 ## Project Structure
 
 ```
 college-resource-system/
 ├── app/
-│   ├── __init__.py          # App factory, blueprint registration, error handlers
+│   ├── __init__.py          # App factory, blueprints & context processors
 │   ├── extensions.py        # SQLAlchemy db instance
-│   ├── models.py            # Event, Resource, ResourceRequest, ResourceRequestItem, Allocation
-│   ├── utils.py             # Shared form-parsing/validation helpers
+│   ├── models.py            # User, Event, Resource, ResourceRequest, Allocation
+│   ├── utils.py             # Auth decorators (@login_required, @admin_required) & helpers
 │   ├── routes/
-│   │   ├── dashboard.py
-│   │   ├── events.py        # Create/edit/cancel/filter events
-│   │   ├── resources.py     # Add/edit/activate/deactivate resources
-│   │   └── requests.py      # Resource requests, approval, availability checker
+│   │   ├── auth.py          # Login, Student Signup, Logout & Demo Logins
+│   │   ├── admin_users.py   # Admin User & Role management
+│   │   ├── calendar.py      # 7-Day Visual Booking Schedule Matrix
+│   │   ├── dashboard.py     # Role-aware dashboard (Admin & Student views)
+│   │   ├── events.py        # Create/edit/cancel/filter events with user ownership
+│   │   ├── resources.py     # Facilities management (Admin RBAC restricted)
+│   │   └── requests.py      # Multi-item requests, Admin approval/rejection, Live availability
 │   ├── services/
-│   │   └── booking_service.py   # Conflict detection, suitability, alternatives, transactional allocation
-│   └── templates/           # Jinja2 templates (Tailwind CSS via CDN)
+│   │   └── booking_service.py   # Conflict detection, suitability, alternatives, all-or-nothing allocation
+│   └── templates/           # Jinja2 templates with modern university portal theme
 ├── config.py
 ├── run.py                   # Entry point
-├── init_db.py                # Creates DB tables
-├── seed.py                  # Creates tables + sample resources/event
+├── seed.py                  # Seeds users, resources, events & allocations
 ├── requirements.txt
 ├── .env.example
 └── .gitignore
@@ -38,30 +65,21 @@ college-resource-system/
 ## 1. Installation & Running
 
 ```bash
-# 1. Clone and enter the repo
-git clone <your-repo-url>
-cd college-resource-system
-
-# 2. Create a virtual environment
-python3 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-
-# 3. Install dependencies
+# 1. Install dependencies
 pip install -r requirements.txt
 
-# 4. Configure environment
+# 2. Configure environment
 cp .env.example .env
-# edit .env and set a real SECRET_KEY if deploying anywhere public
 
-# 5. Set up the database with sample data (recommended for first run)
+# 3. Initialize & Seed database with demo accounts and data
 python seed.py
-# (or, for an empty database: python init_db.py)
 
-# 6. Run the app
+# 4. Run the development server
 python run.py
 ```
 
 The app is served at **http://localhost:5000**.
+
 
 ## 2. Database Setup
 

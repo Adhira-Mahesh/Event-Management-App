@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.extensions import db
 from app.models import Event, EVENT_STATUSES
-from app.utils import parse_datetime_local, parse_int
+from app.utils import parse_datetime_local, parse_int, login_required, get_current_user
 
 events_bp = Blueprint("events", __name__, template_folder="../templates/events")
 
@@ -16,7 +16,7 @@ def _validate_event_fields(form):
     if not name:
         errors.append("Event name is required.")
     if not organizer:
-        errors.append("Organizer is required.")
+        errors.append("Organizer / Department name is required.")
     data["name"] = name
     data["organizer"] = organizer
 
@@ -51,12 +51,20 @@ def _validate_event_fields(form):
     return data, errors
 
 
+@events_bp.route("")
 @events_bp.route("/")
+@login_required
 def list_events():
+
     status_filter = request.args.get("status", "")
     date_filter = request.args.get("date", "")
+    mine_only = request.args.get("mine") == "1"
+    current_user = get_current_user()
 
     query = Event.query
+    if mine_only and current_user.is_authenticated:
+        query = query.filter(Event.user_id == current_user.id)
+
     if status_filter and status_filter in EVENT_STATUSES:
         query = query.filter(Event.status == status_filter)
     if date_filter:
@@ -76,11 +84,14 @@ def list_events():
         statuses=EVENT_STATUSES,
         status_filter=status_filter,
         date_filter=date_filter,
+        mine_only=mine_only,
     )
 
 
 @events_bp.route("/new", methods=["GET", "POST"])
+@login_required
 def new_event():
+    current_user = get_current_user()
     if request.method == "POST":
         data, errors = _validate_event_fields(request.form)
         if errors:
@@ -89,17 +100,28 @@ def new_event():
             return render_template("events/form.html", event=data, statuses=EVENT_STATUSES, mode="create")
 
         event = Event(**data)
+        event.user_id = current_user.id
         db.session.add(event)
         db.session.commit()
-        flash(f'Event "{event.name}" created.', "success")
+        flash(f'Event "{event.name}" created successfully.', "success")
         return redirect(url_for("events.list_events"))
 
-    return render_template("events/form.html", event=None, statuses=EVENT_STATUSES, mode="create")
+    default_data = {
+        "organizer": f"{current_user.department or current_user.name}"
+    }
+    return render_template("events/form.html", event=default_data, statuses=EVENT_STATUSES, mode="create")
 
 
 @events_bp.route("/<int:event_id>/edit", methods=["GET", "POST"])
+@login_required
 def edit_event(event_id):
+    current_user = get_current_user()
     event = Event.query.get_or_404(event_id)
+
+    # Permission check: Admin or event creator
+    if not current_user.is_admin and event.user_id and event.user_id != current_user.id:
+        flash("You can only edit events created by your organization.", "error")
+        return redirect(url_for("events.list_events"))
 
     if request.method == "POST":
         data, errors = _validate_event_fields(request.form)
@@ -112,15 +134,22 @@ def edit_event(event_id):
         for key, value in data.items():
             setattr(event, key, value)
         db.session.commit()
-        flash(f'Event "{event.name}" updated.', "success")
+        flash(f'Event "{event.name}" updated successfully.', "success")
         return redirect(url_for("events.list_events"))
 
     return render_template("events/form.html", event=event, statuses=EVENT_STATUSES, mode="edit")
 
 
 @events_bp.route("/<int:event_id>/cancel", methods=["POST"])
+@login_required
 def cancel_event(event_id):
+    current_user = get_current_user()
     event = Event.query.get_or_404(event_id)
+
+    if not current_user.is_admin and event.user_id and event.user_id != current_user.id:
+        flash("You can only cancel events created by your organization.", "error")
+        return redirect(url_for("events.list_events"))
+
     event.status = "Cancelled"
 
     # Cancelling an event also releases any resources allocated to it.
@@ -133,3 +162,4 @@ def cancel_event(event_id):
     db.session.commit()
     flash(f'Event "{event.name}" cancelled and its resources released.', "success")
     return redirect(url_for("events.list_events"))
+

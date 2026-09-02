@@ -1,59 +1,129 @@
 {% extends "base.html" %}
-{% block title %}Resource Availability · CERAS{% endblock %}
+{% block title %}  Resource Availability · CERAS{% endblock %}
 {% block content %}
 
-<h1 class="text-2xl font-bold mb-6">Check Resource Availability</h1>
-
-<form method="post" class="bg-white rounded-xl shadow p-6 max-w-2xl space-y-4 mb-8">
-  <div class="grid grid-cols-2 gap-4">
-    <div>
-      <label class="block text-sm font-medium mb-1">Resource Type</label>
-      <select name="resource_type" class="w-full border rounded-lg px-3 py-2 text-sm" required>
-        <option value="">Select type…</option>
-        {% for t in resource_types %}
-          <option value="{{ t }}" {% if form_values.resource_type == t %}selected{% endif %}>{{ t }}</option>
-        {% endfor %}
-      </select>
+<div class="max-w-4xl mx-auto my-6">
+  
+  <div class="mb-8">
+    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 mb-1">
+      <span></span> Live Availability Explorer
     </div>
-    <div>
-      <label class="block text-sm font-medium mb-1">Min. Capacity (optional)</label>
-      <input type="number" min="1" name="min_capacity" value="{{ form_values.min_capacity }}"
-             class="w-full border rounded-lg px-3 py-2 text-sm" />
-    </div>
+    <h1 class="text-3xl font-display font-bold text-slate-900">Check Resource Availability </h1>
+    <p class="text-xs text-slate-500 mt-0.5">Test any time slot to see unreserved auditoriums, computer labs, and equipment.</p>
   </div>
-  <div class="grid grid-cols-2 gap-4">
-    <div>
-      <label class="block text-sm font-medium mb-1">Start</label>
-      <input type="datetime-local" name="start_time" value="{{ form_values.start_time }}"
-             class="w-full border rounded-lg px-3 py-2 text-sm" required />
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1">End</label>
-      <input type="datetime-local" name="end_time" value="{{ form_values.end_time }}"
-             class="w-full border rounded-lg px-3 py-2 text-sm" required />
-    </div>
-  </div>
-  <button class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700">Check Availability</button>
-</form>
 
-{% if results is not none %}
-<div class="bg-white rounded-xl shadow p-5">
-  <h2 class="font-semibold mb-3">Available &amp; Suitable Resources</h2>
-  {% if results %}
-  <table class="w-full text-sm">
-    <thead class="text-left text-xs text-slate-500 uppercase border-b">
-      <tr><th class="py-2">Name</th><th class="py-2">Type</th><th class="py-2">Capacity</th></tr>
-    </thead>
-    <tbody class="divide-y">
-      {% for r in results %}
-      <tr><td class="py-2 font-medium">{{ r.name }}</td><td class="py-2">{{ r.type }}</td><td class="py-2">{{ r.capacity or '—' }}</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p class="text-sm text-slate-400">No active, suitable resources are free for that time window.</p>
+  <!-- Availability Query Form -->
+  <form method="post" class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-6 sm:p-8 space-y-4 mb-8">
+    
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Resource Category</label>
+        <select name="resource_type" required
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-slate-50/50 focus:bg-white">
+          <option value="">Select category…</option>
+          {% for t in resource_types %}
+            <option value="{{ t }}" {% if form_values.resource_type == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Minimum Capacity (Optional)</label>
+        <input type="number" min="1" name="min_capacity" value="{{ form_values.min_capacity }}"
+               placeholder="e.g. 100 people"
+               class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-slate-50/50 focus:bg-white" />
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Window Start</label>
+        <input type="datetime-local" name="start_time" value="{{ form_values.start_time }}" required
+               class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-slate-50/50 focus:bg-white" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">Window End</label>
+        <input type="datetime-local" name="end_time" value="{{ form_values.end_time }}" required
+               class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-slate-50/50 focus:bg-white" />
+      </div>
+    </div>
+
+    <div class="pt-2 flex gap-3">
+      <button type="submit" 
+              class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-6 py-2.5 rounded-xl shadow-md shadow-indigo-600/20 transition-all flex items-center gap-1.5">
+        <span>  Check Availability</span>
+      </button>
+      <a href="{{ url_for('calendar.schedule') }}" class="px-4 py-2.5 text-xs text-slate-500 hover:text-slate-800 hover:underline">
+        Open 7-Day Schedule Calendar →
+      </a>
+    </div>
+
+  </form>
+
+  <!-- Query Results -->
+  {% if results is not none %}
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 animate-fadeIn">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h2 class="font-display font-bold text-lg text-slate-900">Available &amp; Suitable Resources</h2>
+        <p class="text-xs text-slate-500">Free from overlapping active allocations for the requested slot</p>
+      </div>
+      <span class="text-xs font-semibold px-3 py-1 rounded-full {{ 'bg-emerald-100 text-emerald-800' if results else 'bg-rose-100 text-rose-800' }}">
+        {{ results|length }} unit(s) found
+      </span>
+    </div>
+
+    {% if results %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold">
+          <tr>
+            <th class="py-3 px-4">Resource Name</th>
+            <th class="py-3 px-4">Category</th>
+            <th class="py-3 px-4">Capacity</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for r in results %}
+          <tr class="hover:bg-slate-50/60 transition-colors">
+            <td class="py-3 px-4 font-semibold text-slate-900">{{ r.name }}</td>
+            <td class="py-3 px-4 text-slate-600">{{ r.type }}</td>
+            <td class="py-3 px-4 text-slate-600">{{ r.capacity ~ ' seats' if r.capacity else '— (Item)' }}</td>
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Available &amp; Free
+              </span>
+            </td>
+            <td class="py-3 px-4 text-right">
+              <a href="{{ url_for('requests.new_request') }}" class="text-xs font-semibold text-indigo-600 hover:underline">
+                Request Now →
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="py-12 text-center text-slate-400">
+      <span class="text-3xl">  </span>
+      <p class="text-sm font-semibold text-slate-700 mt-2">No matching resources free for this time window.</p>
+      <p class="text-xs text-slate-400 mt-1">All units of this category are booked or insufficient in capacity. Try adjusting your schedule window.</p>
+      <div class="mt-4">
+        <a href="{{ url_for('calendar.schedule') }}" class="text-xs text-indigo-600 font-semibold hover:underline">
+          Check 7-Day Schedule Matrix to find open windows →
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
   {% endif %}
+
 </div>
-{% endif %}
 
 {% endblock %}

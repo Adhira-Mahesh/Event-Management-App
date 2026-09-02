@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}User & Role Management · Administrator Portal{% endblock %}
+{% block content %}
+
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+  <div>
+    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 mb-1">
+      <span>🛡️</span> Administrator Control Panel
+    </div>
+    <h1 class="text-3xl font-display font-bold text-slate-900">User &amp; Role Management</h1>
+    <p class="text-xs text-slate-500 mt-0.5">Manage registered campus accounts, grant Administrator privileges, and toggle account access.</p>
+  </div>
+
+  <button onclick="document.getElementById('create-user-modal').classList.remove('hidden')" 
+          class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-md transition-all">
+    <span>+ Provision User</span>
+  </button>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Users</span>
+      <span class="p-2 rounded-xl bg-slate-100 text-slate-700 text-base">👥</span>
+    </div>
+    <p class="text-2xl font-display font-bold text-slate-900 mt-2">{{ stats.total_users }}</p>
+    <p class="text-[11px] text-slate-400 mt-0.5">All registered accounts</p>
+  </div>
+
+  <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-semibold uppercase tracking-wider text-purple-600">Administrators</span>
+      <span class="p-2 rounded-xl bg-purple-50 text-purple-700 text-base">🛡️</span>
+    </div>
+    <p class="text-2xl font-display font-bold text-purple-700 mt-2">{{ stats.admins }}</p>
+    <p class="text-[11px] text-purple-500/80 mt-0.5">Full decision controls</p>
+  </div>
+
+  <div class="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-semibold uppercase tracking-wider text-emerald-600">Student Organisers</span>
+      <span class="p-2 rounded-xl bg-emerald-50 text-emerald-700 text-base">  </span>
+    </div>
+    <p class="text-2xl font-display font-bold text-emerald-700 mt-2">{{ stats.student_organisers }}</p>
+    <p class="text-[11px] text-emerald-500/80 mt-0.5">Event &amp; request creators</p>
+  </div>
+
+  <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Accounts</span>
+      <span class="p-2 rounded-xl bg-emerald-50 text-emerald-600 text-base"> </span>
+    </div>
+    <p class="text-2xl font-display font-bold text-slate-900 mt-2">{{ stats.active_users }} <span class="text-xs font-normal text-slate-400">/ {{ stats.total_users }}</span></p>
+    <p class="text-[11px] text-slate-400 mt-0.5">{{ stats.inactive_users }} inactive accounts</p>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="bg-white rounded-2xl border border-slate-200 p-4 mb-6 shadow-sm">
+  <form method="get" class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <div>
+        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Filter by Role</label>
+        <select name="role" onchange="this.form.submit()" class="text-xs border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="">All Roles</option>
+          <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>🛡️ Administrator</option>
+          <option value="student_organiser" {% if role_filter == 'student_organiser' %}selected{% endif %}>   Student Organiser</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Search Account</label>
+        <div class="relative">
+          <input type="text" name="q" value="{{ search }}" placeholder="Search name, email, dept…" 
+                 class="text-xs border border-slate-300 rounded-xl pl-8 pr-3 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64" />
+          <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+      </div>
+      
+      <div class="self-end">
+        <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2 rounded-xl">Search</button>
+        {% if role_filter or search %}
+          <a href="{{ url_for('admin_users.list_users') }}" class="text-xs text-slate-500 hover:text-slate-800 hover:underline ml-2">Clear</a>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Users Table -->
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        <tr>
+          <th class="px-6 py-4">User</th>
+          <th class="px-6 py-4">Department / Org</th>
+          <th class="px-6 py-4">Role Assignment</th>
+          <th class="px-6 py-4">Account Status</th>
+          <th class="px-6 py-4 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for u in users %}
+        <tr class="hover:bg-slate-50/60 transition-colors">
+          <!-- User info -->
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl {{ 'bg-purple-600' if u.is_admin else 'bg-emerald-600' }} text-white font-bold flex items-center justify-center text-xs shadow-inner">
+                {{ u.name[0] if u.name else 'U' }}
+              </div>
+              <div>
+                <div class="font-semibold text-slate-900 flex items-center gap-1.5">
+                  <span>{{ u.name }}</span>
+                  {% if u.id == current_user.id %}
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">You</span>
+                  {% endif %}
+                </div>
+                <div class="text-xs text-slate-500">{{ u.email }}</div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Department -->
+          <td class="px-6 py-4 text-xs text-slate-600">
+            {{ u.department or '—' }}
+          </td>
+
+          <!-- Role selection -->
+          <td class="px-6 py-4">
+            <form method="post" action="{{ url_for('admin_users.update_role', user_id=u.id) }}" class="inline-flex items-center gap-2">
+              <select name="role" onchange="this.form.submit()" 
+                      class="text-xs font-semibold rounded-xl px-2.5 py-1.5 border transition-all cursor-pointer
+                        {% if u.is_admin %} bg-purple-50 text-purple-800 border-purple-200 hover:border-purple-400
+                        {% else %} bg-emerald-50 text-emerald-800 border-emerald-200 hover:border-emerald-400 {% endif %}">
+                <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>🛡️ Administrator</option>
+                <option value="student_organiser" {% if u.role == 'student_organiser' %}selected{% endif %}>   Student Organiser</option>
+              </select>
+            </form>
+          </td>
+
+          <!-- Status badge -->
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {{ 'bg-emerald-100 text-emerald-800' if u.is_active else 'bg-rose-100 text-rose-800' }}">
+              <span class="w-1.5 h-1.5 rounded-full {{ 'bg-emerald-500' if u.is_active else 'bg-rose-500' }}"></span>
+              {{ 'Active' if u.is_active else 'Deactivated' }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td class="px-6 py-4 text-right">
+            {% if u.id != current_user.id %}
+            <form method="post" action="{{ url_for('admin_users.toggle_status', user_id=u.id) }}" class="inline"
+                  onsubmit="return confirm('Are you sure you want to change the status of this user account?');">
+              <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-xl border {{ 'border-rose-200 text-rose-600 hover:bg-rose-50' if u.is_active else 'border-emerald-200 text-emerald-600 hover:bg-emerald-50' }} transition-colors">
+                {{ 'Deactivate' if u.is_active else 'Activate' }}
+              </button>
+            </form>
+            {% else %}
+              <span class="text-xs text-slate-400 italic">Self</span>
+            {% endif %}
+          </td>
+
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="px-6 py-12 text-center text-slate-400 text-xs">
+            No registered users found matching the query.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div id="create-user-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 sm:p-8 animate-fadeIn">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold font-display text-slate-900">Provision New User</h3>
+      <button onclick="document.getElementById('create-user-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+    </div>
+    
+    <form method="post" action="{{ url_for('admin_users.create_user') }}" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">Full Name</label>
+        <input type="text" name="name" required placeholder="e.g. Prof. Arthur Pendelton"
+               class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">Email Address</label>
+        <input type="email" name="email" required placeholder="e.g. arthur@college.edu"
+               class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">Department / Organization</label>
+        <input type="text" name="department" placeholder="e.g. Dean of Students Office"
+               class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">Role</label>
+        <select name="role" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <option value="student_organiser">   Student Organiser</option>
+          <option value="admin">🛡️ Administrator</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">Initial Password</label>
+        <input type="password" name="password" required minlength="6" placeholder="Minimum 6 characters"
+               class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs py-2.5 rounded-xl shadow transition-all">
+          Create Account
+        </button>
+        <button type="button" onclick="document.getElementById('create-user-modal').classList.add('hidden')" class="px-4 py-2.5 rounded-xl border text-xs text-slate-600 hover:bg-slate-50">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

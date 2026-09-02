@@ -15,7 +15,7 @@ from app.services.booking_service import (
     cancel_allocation,
     find_suitable_candidates,
 )
-from app.utils import parse_datetime_local, parse_int
+from app.utils import parse_datetime_local, parse_int, login_required, admin_required, get_current_user
 
 requests_bp = Blueprint("requests", __name__, template_folder="../templates/requests")
 
@@ -24,19 +24,35 @@ requests_bp = Blueprint("requests", __name__, template_folder="../templates/requ
 # List + detail
 # ---------------------------------------------------------------------------
 
+@requests_bp.route("")
 @requests_bp.route("/")
+@login_required
 def list_requests():
+
     status_filter = request.args.get("status", "")
+    mine_only = request.args.get("mine") == "1"
+    current_user = get_current_user()
+
     query = ResourceRequest.query
+
+    if mine_only and current_user.is_authenticated:
+        query = query.filter(ResourceRequest.user_id == current_user.id)
+
     if status_filter and status_filter in REQUEST_STATUSES:
         query = query.filter(ResourceRequest.status == status_filter)
+
     reqs = query.order_by(ResourceRequest.created_at.desc()).all()
     return render_template(
-        "requests/list.html", requests=reqs, statuses=REQUEST_STATUSES, status_filter=status_filter
+        "requests/list.html",
+        requests=reqs,
+        statuses=REQUEST_STATUSES,
+        status_filter=status_filter,
+        mine_only=mine_only,
     )
 
 
 @requests_bp.route("/<int:request_id>")
+@login_required
 def view_request(request_id):
     rr = ResourceRequest.query.get_or_404(request_id)
     return render_template("requests/detail.html", rr=rr)
@@ -47,10 +63,18 @@ def view_request(request_id):
 # ---------------------------------------------------------------------------
 
 @requests_bp.route("/new", methods=["GET", "POST"])
+@login_required
 def new_request():
-    events = Event.query.filter(Event.status.notin_(["Cancelled", "Rejected"])).order_by(
-        Event.start_time.asc()
-    ).all()
+    current_user = get_current_user()
+
+    # Events query: Admin sees all non-cancelled events; Student Organiser sees their own or all open events
+    events_query = Event.query.filter(Event.status.notin_(["Cancelled", "Rejected"]))
+    if not current_user.is_admin:
+        # Show their own events first, or any open event
+        events = events_query.order_by(Event.start_time.asc()).all()
+    else:
+        events = events_query.order_by(Event.start_time.asc()).all()
+
     resources = Resource.query.filter_by(is_active=True).order_by(Resource.type, Resource.name).all()
 
     if request.method == "POST":
@@ -126,7 +150,13 @@ def new_request():
                 "requests/new.html", events=events, resources=resources, resource_types=RESOURCE_TYPES
             )
 
-        rr = ResourceRequest(event_id=event.id, start_time=start_time, end_time=end_time, status="Pending")
+        rr = ResourceRequest(
+            event_id=event.id,
+            user_id=current_user.id,
+            start_time=start_time,
+            end_time=end_time,
+            status="Pending",
+        )
         db.session.add(rr)
         db.session.flush()  # get rr.id before commit
 
@@ -134,7 +164,7 @@ def new_request():
             db.session.add(ResourceRequestItem(request_id=rr.id, **it))
 
         db.session.commit()
-        flash("Resource request submitted and is pending approval.", "success")
+        flash("Resource request submitted successfully and is pending admin approval.", "success")
         return redirect(url_for("requests.view_request", request_id=rr.id))
 
     return render_template(
@@ -147,6 +177,7 @@ def new_request():
 # ---------------------------------------------------------------------------
 
 @requests_bp.route("/<int:request_id>/approve", methods=["POST"])
+@admin_required
 def approve_request(request_id):
     rr = ResourceRequest.query.get_or_404(request_id)
     if rr.status != "Pending":
@@ -159,20 +190,21 @@ def approve_request(request_id):
     else:
         flash(
             "Request could not be fully satisfied, so NO resources were allocated "
-            "(all-or-nothing). See the alternative suggestions below.",
+            "(all-or-nothing policy). Review the suggested alternatives.",
             "error",
         )
     return redirect(url_for("requests.view_request", request_id=rr.id))
 
 
 @requests_bp.route("/<int:request_id>/reject", methods=["POST"])
+@admin_required
 def reject_request(request_id):
     rr = ResourceRequest.query.get_or_404(request_id)
     if rr.status != "Pending":
         flash("Only pending requests can be rejected.", "error")
         return redirect(url_for("requests.view_request", request_id=rr.id))
 
-    reason = (request.form.get("reason") or "Rejected by admin.").strip()
+    reason = (request.form.get("reason") or "Rejected by administrator.").strip()
     rr.status = "Rejected"
     rr.rejection_reason = reason
     db.session.commit()
@@ -181,8 +213,15 @@ def reject_request(request_id):
 
 
 @requests_bp.route("/<int:request_id>/cancel", methods=["POST"])
+@login_required
 def cancel_request(request_id):
+    current_user = get_current_user()
     rr = ResourceRequest.query.get_or_404(request_id)
+
+    if not current_user.is_admin and rr.user_id and rr.user_id != current_user.id:
+        flash("You can only cancel your own requests.", "error")
+        return redirect(url_for("requests.view_request", request_id=rr.id))
+
     if rr.status not in ("Pending", "Approved"):
         flash("This request cannot be cancelled.", "error")
         return redirect(url_for("requests.view_request", request_id=rr.id))
@@ -193,6 +232,7 @@ def cancel_request(request_id):
 
 
 @requests_bp.route("/allocations/<int:allocation_id>/cancel", methods=["POST"])
+@admin_required
 def cancel_single_allocation(allocation_id):
     alloc = Allocation.query.get_or_404(allocation_id)
     cancel_allocation(alloc)
@@ -205,6 +245,7 @@ def cancel_single_allocation(allocation_id):
 # ---------------------------------------------------------------------------
 
 @requests_bp.route("/availability", methods=["GET", "POST"])
+@login_required
 def check_availability():
     results = None
     form_values = {"resource_type": "", "start_time": "", "end_time": "", "min_capacity": ""}
@@ -249,3 +290,4 @@ def check_availability():
         results=results,
         form_values=form_values,
     )
+
