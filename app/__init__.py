@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect
 from config import Config
 from app.extensions import db
 
@@ -25,6 +25,11 @@ def create_app(config_class=Config):
     app.register_blueprint(requests_bp, url_prefix="/requests")
     app.register_blueprint(admin_users_bp)
     app.register_blueprint(calendar_bp)
+
+    @app.route("/")
+    def index():
+        return redirect("/auth/login")
+
 
     @app.context_processor
     def inject_auth_context():

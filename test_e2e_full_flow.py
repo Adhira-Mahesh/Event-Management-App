@@ -94,7 +94,7 @@ class TestCERASFullWorkflow(unittest.TestCase):
         self.client.post("/auth/login", data={"email": "alex.cs@college.edu", "password": "student123"}, follow_redirects=True)
 
         # Create an event
-        now = datetime.utcnow().replace(minute=0, second=0, microsecond=0) + timedelta(days=12)
+        now = datetime.utcnow().replace(minute=0, second=0, microsecond=0) + timedelta(days=30 + int(datetime.utcnow().timestamp()) % 1000)
         unique_name = f"Robotics Championship {int(datetime.utcnow().timestamp())}"
         res = self.client.post("/events/new", data={
             "name": unique_name,
@@ -132,6 +132,7 @@ class TestCERASFullWorkflow(unittest.TestCase):
         self.assertIn(b"Access denied", res.data)
 
         # 3. Switch to Admin to approve request
+        self.client.post("/auth/logout", follow_redirects=True)
         self.client.post("/auth/login", data={"email": "admin@college.edu", "password": "admin123"}, follow_redirects=True)
 
         res = self.client.post(f"/requests/{req.id}/approve", follow_redirects=True)

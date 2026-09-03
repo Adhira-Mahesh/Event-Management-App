@@ -6,16 +6,19 @@ from app.models import User, AnonymousUser
 
 def get_current_user():
     """Retrieve the current logged-in user or AnonymousUser."""
-    if "user_id" not in session:
+    user_id = session.get("user_id")
+    if not user_id:
         return AnonymousUser()
 
-    if not hasattr(g, "_current_user"):
-        user = User.query.get(session["user_id"])
+    if getattr(g, "_current_user_id", None) != user_id:
+        user = User.query.get(user_id)
         if user and user.is_active:
             g._current_user = user
+            g._current_user_id = user_id
         else:
             session.pop("user_id", None)
             g._current_user = AnonymousUser()
+            g._current_user_id = None
     return g._current_user
 
 
@@ -25,7 +28,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         current_user = get_current_user()
         if not current_user.is_authenticated:
-            flash("Please log in to access this page.", "warning")
+            flash("Please log in", "warning")
             return redirect(url_for("auth.login", next=request.url))
         return f(*args, **kwargs)
     return decorated_function

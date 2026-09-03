@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full bg-slate-50">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}College Event Resource Allocation System · CERAS{% endblock %}</title>
+  <title>{% block title %}CERAS · Campus Resource Portal{% endblock %}</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -14,369 +14,447 @@
         extend: {
           colors: {
             brand: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              200: '#c7d2fe',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
-              800: '#3730a3',
-              900: '#312e81',
-              950: '#1e1b4b',
+              50: '#f0f7ff',
+              100: '#e0effe',
+              200: '#bae0fd',
+              300: '#7cc5fb',
+              400: '#38a5f6',
+              500: '#0e87eb',
+              600: '#026bc9',
+              700: '#0355a3',
+              800: '#074885',
+              900: '#0b3d6f',
+              950: '#08274a',
             },
-            slate: {
-              850: '#151f32',
-              900: '#0f172a',
-              950: '#0a0f1d',
+            portal: {
+              sidebar: '#0b1329',
+              subtle: '#111c38',
+              hover: '#162447',
+              border: '#1e293b',
+              active: '#2563eb'
             }
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-            display: ['Outfit', 'Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'Outfit', 'Inter', 'sans-serif'],
+          },
+          boxShadow: {
+            'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+            'card': '0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04)',
+            'portal': '0 4px 20px -2px rgba(15, 23, 42, 0.08)',
           }
         }
       }
     }
   </script>
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     body {
       font-family: 'Inter', sans-serif;
     }
     .font-display {
-      font-family: 'Outfit', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    /* Custom scrollbar */
+    /* Sleek enterprise scrollbar */
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
     }
     ::-webkit-scrollbar-track {
-      background: #f1f5f9;
+      background: transparent;
     }
     ::-webkit-scrollbar-thumb {
       background: #cbd5e1;
-      border-radius: 4px;
+      border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
-    .glass-nav {
-      background: rgba(15, 23, 42, 0.94);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 4px;
     }
-    .glass-card {
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(8px);
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+      background: #334155;
     }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-  <!-- Main Navigation Bar -->
-  <header class="sticky top-0 z-50 glass-nav border-b border-slate-800 text-white shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        
-        <!-- Brand Logo -->
-        <div class="flex items-center gap-3">
-          <a href="{{ url_for('dashboard.index') if current_user.is_authenticated else url_for('auth.login') }}" class="flex items-center gap-2.5 group">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-blue-400 flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-200">
-              <span class="text-xl">🩷</span>
-            </div>
-            <div>
-              <span class="font-display font-bold text-lg tracking-tight text-white group-hover:text-indigo-200 transition-colors">CERAS</span>
-           
-            </div>
-          </a>
-        </div>
+{% if current_user.is_authenticated %}
+  <!-- ================= AUTHENTICATED PORTAL WITH LEFT NAVBAR ================= -->
+  <div class="min-h-screen flex flex-col lg:flex-row bg-slate-50">
 
-        {% if current_user.is_authenticated %}
-        <!-- Desktop Nav Links -->
-        <nav class="hidden md:flex items-center space-x-1 text-sm font-medium">
-          <a href="{{ url_for('dashboard.index') }}" 
-             class="px-3 py-2 rounded-lg transition-all {{ 'bg-indigo-600/30 text-white font-semibold border border-indigo-500/40 shadow-sm' if request.endpoint == 'dashboard.index' else 'text-slate-300 hover:text-white hover:bg-slate-800/80' }}">
-          Dashboard
-          </a>
-          <a href="{{ url_for('calendar.schedule') }}" 
-             class="px-3 py-2 rounded-lg transition-all {{ 'bg-indigo-600/30 text-white font-semibold border border-indigo-500/40 shadow-sm' if request.endpoint == 'calendar.schedule' else 'text-slate-300 hover:text-white hover:bg-slate-800/80' }}">
-            7-Day Schedule
-          </a>
-          <a href="{{ url_for('events.list_events') }}" 
-             class="px-3 py-2 rounded-lg transition-all {{ 'bg-indigo-600/30 text-white font-semibold border border-indigo-500/40 shadow-sm' if request.endpoint and request.endpoint.startswith('events.') else 'text-slate-300 hover:text-white hover:bg-slate-800/80' }}">
-           Events
-          </a>
-          <a href="{{ url_for('requests.list_requests') }}" 
-             class="px-3 py-2 rounded-lg transition-all {{ 'bg-indigo-600/30 text-white font-semibold border border-indigo-500/40 shadow-sm' if request.endpoint and request.endpoint.startswith('requests.') and request.endpoint != 'requests.check_availability' else 'text-slate-300 hover:text-white hover:bg-slate-800/80' }}">
-            Requests
-          </a>
-          <a href="{{ url_for('resources.list_resources') }}" 
-             class="px-3 py-2 rounded-lg transition-all {{ 'bg-indigo-600/30 text-white font-semibold border border-indigo-500/40 shadow-sm' if request.endpoint and request.endpoint.startswith('resources.') else 'text-slate-300 hover:text-white hover:bg-slate-800/80' }}">
- Facilities
-          </a>
-          <a href="{{ url_for('requests.check_availability') }}" 
-             class="px-3 py-2 rounded-lg transition-all {{ 'bg-indigo-600/30 text-white font-semibold border border-indigo-500/40 shadow-sm' if request.endpoint == 'requests.check_availability' else 'text-slate-300 hover:text-white hover:bg-slate-800/80' }}">
-            Live Availability
-          </a>
-          {% if current_user.is_admin %}
-          <a href="{{ url_for('admin_users.list_users') }}" 
-             class="px-3 py-2 rounded-lg transition-all {{ 'bg-indigo-600/30 text-white font-semibold border border-indigo-500/40 shadow-sm' if request.endpoint and request.endpoint.startswith('admin_users.') else 'text-slate-300 hover:text-white hover:bg-slate-800/80' }}">
-           Users & Roles
-          </a>
-          {% endif %}
-        </nav>
-
-        <!-- User Profile & Role Info -->
-        <div class="flex items-center gap-3">
-          
-          <!-- Role Badge -->
-          <div class="hidden sm:flex items-center gap-1.5">
-            {% if current_user.is_admin %}
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-900/80 to-indigo-900/80 border border-purple-500/40 text-purple-200 shadow-sm">
-                <span>👑</span> Administrator
-              </span>
-            {% else %}
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-950/80 to-teal-950/80 border border-emerald-500/40 text-emerald-300 shadow-sm">
-                <span></span> Student Organiser
-              </span>
-            {% endif %}
+    <!-- Mobile Top Header Bar (lg:hidden) -->
+    <header class="lg:hidden sticky top-0 z-40 bg-portal-sidebar border-b border-portal-border text-white px-4 py-3 flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-3">
+        <button id="mobile-sidebar-open" type="button" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-portal-hover focus:outline-none" aria-label="Open Navigation">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-400 flex items-center justify-center shadow-inner">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
           </div>
-
-          <!-- User Dropdown Menu -->
-          <div class="relative" id="user-menu-container">
-            <button id="user-menu-button" type="button" class="flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <div class="w-7 h-7 rounded-lg {{ 'bg-purple-600' if current_user.is_admin else 'bg-emerald-600' }} text-white font-bold flex items-center justify-center text-xs shadow-inner">
-                {{ current_user.name[0] if current_user.name else 'U' }}
-              </div>
-              <div class="text-left hidden lg:block">
-                <p class="text-xs font-semibold leading-tight text-slate-200 truncate max-w-[120px]">{{ current_user.name }}</p>
-                <p class="text-[10px] text-slate-400 truncate max-w-[120px]">{{ current_user.department or current_user.role }}</p>
-              </div>
-              <svg class="w-3.5 h-3.5 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-
-            <!-- Dropdown Body -->
-            <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-64 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl py-2 z-50 text-slate-200">
-              <div class="px-4 py-3 border-b border-slate-800">
-                <p class="text-xs text-slate-400">Signed in as</p>
-                <p class="text-sm font-semibold text-white truncate">{{ current_user.name }}</p>
-                <p class="text-xs text-slate-400 truncate">{{ current_user.email }}</p>
-                <div class="mt-2">
-                  {% if current_user.is_admin %}
-                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-900/60 text-purple-300 border border-purple-700/50">Admin Account</span>
-                  {% else %}
-                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-900/60 text-emerald-300 border border-emerald-700/50">Student Organiser</span>
-                  {% endif %}
-                </div>
-              </div>
-
-             
-
-              <div class="border-t border-slate-800 pt-1">
-                <form method="post" action="{{ url_for('auth.logout') }}">
-                  <button type="submit" class="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-950/40 hover:text-red-300 flex items-center gap-2 font-medium">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    Sign Out
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mobile Hamburger Toggle -->
-          <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white focus:outline-none">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
-          </button>
+          <span class="font-display font-bold text-base tracking-tight text-white">CERAS</span>
         </div>
-
+      </div>
+      
+      <div class="flex items-center gap-2">
+        {% if current_user.is_admin %}
+          <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-blue-950 text-blue-300 border border-blue-800/80">Admin</span>
         {% else %}
-        <!-- Unauthenticated links -->
-        <div class="flex items-center gap-2 text-sm font-medium">
-          <a href="{{ url_for('auth.login') }}" class="px-4 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-all">
-            Sign In
-          </a>
-          <a href="{{ url_for('auth.signup') }}" class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-600/20 font-semibold transition-all">
-            Student Signup
-          </a>
+          <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-800/80">Organiser</span>
+        {% endif %}
+      </div>
+    </header>
+
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="mobile-sidebar-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden transition-opacity lg:hidden" aria-hidden="true"></div>
+
+    <!-- Left Portal Navigation Sidebar (Persistent on Desktop) -->
+    <aside id="portal-sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-portal-sidebar border-r border-portal-border text-slate-300 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out lg:sticky lg:h-screen shrink-0 shadow-2xl lg:shadow-none">
+      
+      <!-- Brand & Organization Header -->
+      <div class="px-6 py-5 border-b border-portal-border flex items-center justify-between">
+        <a href="{{ url_for('dashboard.index') }}" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-950/50 group-hover:scale-105 transition-transform duration-200">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-display font-bold text-lg tracking-tight text-white group-hover:text-blue-200 transition-colors">CERAS</span>
+              <span class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/30">Portal</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium tracking-tight">Campus Resource System</p>
+          </div>
+        </a>
+
+        <button id="mobile-sidebar-close" type="button" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-portal-hover" aria-label="Close Navigation">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Live Status Indicator -->
+      <div class="px-6 py-3 bg-portal-subtle/50 border-b border-portal-border flex items-center justify-between text-[11px]">
+        <span class="text-slate-400 font-medium flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>System Active</span>
+        </span>
+        <span class="text-slate-400 font-semibold tracking-wide">CERAS v2.4</span>
+      </div>
+
+      <!-- Navigation Link Groups -->
+      <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-6 sidebar-scroll text-sm">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <div>
+          <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Overview
+          </div>
+          <div class="space-y-1">
+            <a href="{{ url_for('dashboard.index') }}" 
+               class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all {{ 'bg-blue-600 text-white shadow-md shadow-blue-900/40' if request.endpoint == 'dashboard.index' else 'text-slate-300 hover:text-white hover:bg-portal-hover' }}">
+              <svg class="w-4 h-4 shrink-0 {{ 'text-white' if request.endpoint == 'dashboard.index' else 'text-slate-400 group-hover:text-white' }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('calendar.schedule') }}" 
+               class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all {{ 'bg-blue-600 text-white shadow-md shadow-blue-900/40' if request.endpoint == 'calendar.schedule' else 'text-slate-300 hover:text-white hover:bg-portal-hover' }}">
+              <svg class="w-4 h-4 shrink-0 {{ 'text-white' if request.endpoint == 'calendar.schedule' else 'text-slate-400 group-hover:text-white' }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+              </svg>
+              <span>7-Day Schedule</span>
+            </a>
+
+            <a href="{{ url_for('requests.check_availability') }}" 
+               class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all {{ 'bg-blue-600 text-white shadow-md shadow-blue-900/40' if request.endpoint == 'requests.check_availability' else 'text-slate-300 hover:text-white hover:bg-portal-hover' }}">
+              <svg class="w-4 h-4 shrink-0 {{ 'text-white' if request.endpoint == 'requests.check_availability' else 'text-slate-400 group-hover:text-white' }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/>
+              </svg>
+              <span>Live Availability</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- SECTION 2: OPERATIONS -->
+        <div>
+          <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Operations
+          </div>
+          <div class="space-y-1">
+            <a href="{{ url_for('requests.list_requests') }}" 
+               class="group flex items-center justify-between px-3 py-2.5 rounded-xl font-medium transition-all {{ 'bg-blue-600 text-white shadow-md shadow-blue-900/40' if request.endpoint and request.endpoint.startswith('requests.') and request.endpoint != 'requests.check_availability' else 'text-slate-300 hover:text-white hover:bg-portal-hover' }}">
+              <div class="flex items-center gap-3">
+                <svg class="w-4 h-4 shrink-0 {{ 'text-white' if request.endpoint and request.endpoint.startswith('requests.') and request.endpoint != 'requests.check_availability' else 'text-slate-400 group-hover:text-white' }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/>
+                </svg>
+                <span>Resource Requests</span>
+              </div>
+            </a>
+
+            <a href="{{ url_for('events.list_events') }}" 
+               class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all {{ 'bg-blue-600 text-white shadow-md shadow-blue-900/40' if request.endpoint and request.endpoint.startswith('events.') else 'text-slate-300 hover:text-white hover:bg-portal-hover' }}">
+              <svg class="w-4 h-4 shrink-0 {{ 'text-white' if request.endpoint and request.endpoint.startswith('events.') else 'text-slate-400 group-hover:text-white' }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/>
+              </svg>
+              <span>Campus Events</span>
+            </a>
+
+            <a href="{{ url_for('resources.list_resources') }}" 
+               class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all {{ 'bg-blue-600 text-white shadow-md shadow-blue-900/40' if request.endpoint and request.endpoint.startswith('resources.') else 'text-slate-300 hover:text-white hover:bg-portal-hover' }}">
+              <svg class="w-4 h-4 shrink-0 {{ 'text-white' if request.endpoint and request.endpoint.startswith('resources.') else 'text-slate-400 group-hover:text-white' }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.75a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m6-9h.75m-.75 3h.75m-.75 3h.75"/>
+              </svg>
+              <span>Facilities &amp; AV</span>
+            </a>
+          </div>
+        </div>
+
+        {% if current_user.is_admin %}
+        <!-- SECTION 3: ADMINISTRATION -->
+        <div>
+          <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            System Administration
+          </div>
+          <div class="space-y-1">
+            <a href="{{ url_for('admin_users.list_users') }}" 
+               class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all {{ 'bg-blue-600 text-white shadow-md shadow-blue-900/40' if request.endpoint and request.endpoint.startswith('admin_users.') else 'text-slate-300 hover:text-white hover:bg-portal-hover' }}">
+              <svg class="w-4 h-4 shrink-0 {{ 'text-white' if request.endpoint and request.endpoint.startswith('admin_users.') else 'text-slate-400 group-hover:text-white' }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+              </svg>
+              <span>User Directory &amp; Roles</span>
+            </a>
+          </div>
         </div>
         {% endif %}
 
+      </nav>
+
+      <!-- User Profile & Sign Out Footer -->
+      <div class="p-4 border-t border-portal-border bg-portal-subtle/70">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shrink-0 {{ 'bg-gradient-to-tr from-blue-700 to-indigo-600' if current_user.is_admin else 'bg-gradient-to-tr from-emerald-600 to-teal-500' }} shadow-inner">
+              {{ current_user.name[0] if current_user.name else 'U' }}
+            </div>
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-white truncate leading-tight">{{ current_user.name }}</p>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                {% if current_user.is_admin %}
+                  <span class="inline-block text-[10px] font-semibold text-blue-300">Administrator</span>
+                {% else %}
+                  <span class="inline-block text-[10px] font-semibold text-emerald-400">Student Organiser</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <button type="submit" title="Sign Out" class="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-portal-hover transition-colors focus:outline-none">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+              </svg>
+            </button>
+          </form>
+        </div>
       </div>
 
-      <!-- Mobile Menu Navigation -->
-{% if current_user.is_authenticated %}
+    </aside>
 
-  <div id="mobile-menu" class="hidden md:hidden py-3 border-t border-slate-800 space-y-1">
+    <!-- Main Content Portal Canvas -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      
+      <!-- Top Action Bar in Content Canvas (Desktop) -->
+      <header class="hidden lg:flex items-center justify-between px-8 py-3.5 bg-white border-b border-slate-200/80 shadow-subtle sticky top-0 z-30">
+        <!-- Breadcrumb / System Context -->
+        <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+          <span class="text-slate-400">Portal</span>
+          <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <span class="font-semibold text-slate-800">
+            {% if request.endpoint == 'dashboard.index' %}Dashboard
+            {% elif request.endpoint == 'calendar.schedule' %}7-Day Schedule
+            {% elif request.endpoint and request.endpoint.startswith('requests.') %}Resource Requests
+            {% elif request.endpoint and request.endpoint.startswith('events.') %}Campus Events
+            {% elif request.endpoint and request.endpoint.startswith('resources.') %}Facilities &amp; AV
+            {% elif request.endpoint and request.endpoint.startswith('admin_users.') %}User Directory
+            {% else %}CERAS Portal{% endif %}
+          </span>
+        </div>
 
+        <!-- Fast Role Context & CTAs -->
+        <div class="flex items-center gap-3 text-xs">
+          <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 font-medium">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span>Campus Resource Portal 2026</span>
+          </div>
 
-<a href="{{ url_for('dashboard.index') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white">
-  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-          d="M4 13h6V4H4v9zm10 7h6v-9h-6v9zM4 20h6v-3H4v3zm10-11h6V4h-6v5z"/>
-  </svg>
-  <span>Dashboard</span>
-</a>
+          {% if current_user.is_admin %}
+            <a href="{{ url_for('resources.new_resource') }}" 
+               class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-all">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              <span>Add Facility</span>
+            </a>
+          {% else %}
+            <a href="{{ url_for('requests.new_request') }}" 
+               class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 rounded-lg shadow-sm shadow-blue-600/20 transition-all">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              <span>Request Resources</span>
+            </a>
+          {% endif %}
+        </div>
+      </header>
 
-<a href="{{ url_for('calendar.schedule') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white">
-  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <rect x="3" y="4" width="18" height="17" rx="2" stroke-width="1.8"/>
-    <path stroke-linecap="round" stroke-width="1.8"
-          d="M16 2v4M8 2v4M3 10h18"/>
-  </svg>
-  <span>7-Day Schedule</span>
-</a>
+      <!-- Main Content Scroll Area -->
+      <main class="flex-1 px-4 sm:px-8 py-8 overflow-y-auto max-w-7xl w-full mx-auto">
+{% else %}
+  <!-- ================= UNAUTHENTICATED EXECUTIVE VIEW ================= -->
+  <div class="min-h-screen flex flex-col bg-slate-900 text-slate-100">
+    
+    <!-- Minimalist Executive Header -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="{{ url_for('auth.login') }}" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-900/40 group-hover:scale-105 transition-transform duration-200">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-lg tracking-tight text-white">CERAS</span>
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-blue-900/60 text-blue-300 border border-blue-700/50">Enterprise Portal</span>
+            </div>
+          </div>
+        </a>
 
-<a href="{{ url_for('events.list_events') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white">
-  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-          d="M8 3v3m8-3v3M4 9h16M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/>
-    <path stroke-linecap="round" stroke-width="1.8"
-          d="M8 13h3m2 0h3M8 17h3"/>
-  </svg>
-  <span>Events</span>
-</a>
+        <div class="flex items-center gap-3 text-xs font-semibold">
+          <a href="{{ url_for('auth.login') }}" class="px-4 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition-all">
+            Sign In
+          </a>
+          <a href="{{ url_for('auth.signup') }}" class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-500 shadow-md shadow-blue-600/30 transition-all">
+            Create Account
+          </a>
+        </div>
+      </div>
+    </header>
 
-<a href="{{ url_for('requests.list_requests') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white">
-  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-          d="M6 3h9l3 3v15H6a2 2 0 01-2-2V5a2 2 0 012-2z"/>
-    <path stroke-linecap="round" stroke-width="1.8"
-          d="M9 11h6M9 15h6M9 7h3"/>
-  </svg>
-  <span>Requests</span>
-</a>
-
-<a href="{{ url_for('resources.list_resources') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white">
-  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-          d="M4 21h16M5 21V6a2 2 0 012-2h10a2 2 0 012 2v15M8 8h8M8 12h8M8 16h3m2 0h3"/>
-  </svg>
-  <span>Facilities</span>
-</a>
-
-<a href="{{ url_for('requests.check_availability') }}"
-   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white">
-  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <circle cx="11" cy="11" r="7" stroke-width="1.8"/>
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-          d="M20 20l-4-4"/>
-  </svg>
-  <span>Live Availability</span>
-</a>
-
-{% if current_user.is_admin %}
-  <a href="{{ url_for('admin_users.list_users') }}"
-     class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white">
-    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-            d="M16 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M9.5 11a4 4 0 100-8 4 4 0 000 8zm7-1a3 3 0 100-6m4 17v-2a4 4 0 00-3-3.87"/>
-    </svg>
-    <span>Users &amp; Roles</span>
-  </a>
+    <!-- Main Container for Login / Signup -->
+    <main class="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div class="w-full">
 {% endif %}
 
+        <!-- Flash Alerts Container (Single Definition) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="mb-6 space-y-2.5 max-w-4xl mx-auto" id="flash-container">
+              {% for category, message in messages %}
+                <div class="flash-alert flex items-start gap-3 p-3.5 rounded-xl border shadow-subtle transition-all duration-200
+                  {% if category == 'error' %} bg-rose-50 border-rose-200 text-rose-900
+                  {% elif category == 'warning' %} bg-amber-50 border-amber-200 text-amber-900
+                  {% elif category == 'info' %} bg-blue-50 border-blue-200 text-blue-900
+                  {% else %} bg-emerald-50 border-emerald-200 text-emerald-900 {% endif %}">
+                  
+                  <div class="mt-0.5 shrink-0">
+                    {% if category == 'error' %}
+                      <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                    {% elif category == 'warning' %}
+                      <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    {% elif category == 'info' %}
+                      <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                    {% else %}
+                      <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    {% endif %}
+                  </div>
+                  
+                  <div class="flex-1 text-xs font-medium leading-relaxed">
+                    {{ message }}
+                  </div>
+
+                  <button type="button" onclick="this.closest('.flash-alert').remove()" class="text-slate-400 hover:text-slate-600 text-xs p-1 rounded-lg focus:outline-none">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Single Content Block -->
+        {% block content %}{% endblock %}
+
+{% if current_user.is_authenticated %}
+      </main>
+
+      <!-- Portal Footer -->
+      <footer class="border-t border-slate-200 bg-white/80 py-4 px-8 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-800">CERAS</span>
+            <span class="text-slate-300">·</span>
+            <span>College Event Resource Allocation System</span>
+          </div>
+          <div class="flex items-center gap-3 text-slate-500">
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span class="font-medium text-slate-600">All Systems Operational</span>
+            </span>
+            <span class="text-slate-300">·</span>
+            <span>Adhira</span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+
+  </div>
+
+{% else %}
+      </div>
+    </main>
+
+    <!-- Footer for unauthenticated pages -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-4 px-6 text-center text-xs text-slate-500">
+      CERAS · College Event Resource Allocation System · Institutional Access
+    </footer>
 
   </div>
 {% endif %}
 
-  
-
-    </div>
-  </header>
-
-  <!-- Main Content Wrapper -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    
-    <!-- Flash Messages Container -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="mb-6 space-y-3" id="flash-container">
-          {% for category, message in messages %}
-            <div class="flash-alert flex items-start gap-3 p-4 rounded-2xl border shadow-sm transition-all duration-300 animate-fadeIn
-              {% if category == 'error' %} bg-rose-50 border-rose-200 text-rose-800
-              {% elif category == 'warning' %} bg-amber-50 border-amber-200 text-amber-800
-              {% elif category == 'info' %} bg-sky-50 border-sky-200 text-sky-800
-              {% else %} bg-emerald-50 border-emerald-200 text-emerald-800 {% endif %}">
-              
-              <div class="mt-0.5 text-lg">
-                {% if category == 'error' %}
-                {% elif category == 'warning' %}
-                {% elif category == 'info' %}
-                {% else %}{% endif %}
-              </div>
-              
-              <div class="flex-1 text-sm font-medium leading-relaxed">
-                {{ message }}
-              </div>
-
-              <button type="button" onclick="this.closest('.flash-alert').remove()" class="text-slate-400 hover:text-slate-600 text-xs p-1 rounded-lg">
-                ✕
-              </button>
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- Global Footer -->
-  <footer class="border-t border-slate-200 bg-white/70 py-6 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-      <div class="flex items-center gap-2">
-        <span class="font-bold text-slate-700">CERAS</span>
-        <span>·</span>
-        <span>College Event Resource Allocation System</span>
-      </div>
-      <div class="flex items-center gap-4 text-slate-500">
-        <span class="inline-flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Adhira</span>
-        </span>
-       
-       
-      </div>
-    </div>
-  </footer>
-
-  <!-- Script for Dropdowns and Interactions -->
+  <!-- Mobile Sidebar Script -->
   <script>
-    // User dropdown toggle
-    const userBtn = document.getElementById('user-menu-button');
-    const userDropdown = document.getElementById('user-dropdown');
-    if (userBtn && userDropdown) {
-      userBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        userDropdown.classList.toggle('hidden');
-      });
-      document.addEventListener('click', (e) => {
-        if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
-          userDropdown.classList.add('hidden');
-        }
-      });
+    const openBtn = document.getElementById('mobile-sidebar-open');
+    const closeBtn = document.getElementById('mobile-sidebar-close');
+    const sidebar = document.getElementById('portal-sidebar');
+    const backdrop = document.getElementById('mobile-sidebar-backdrop');
+
+    function openSidebar() {
+      if (sidebar && backdrop) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
     }
 
-    // Mobile menu toggle
-    const mobBtn = document.getElementById('mobile-menu-toggle');
-    const mobMenu = document.getElementById('mobile-menu');
-    if (mobBtn && mobMenu) {
-      mobBtn.addEventListener('click', () => {
-        mobMenu.classList.toggle('hidden');
-      });
+    function closeSidebar() {
+      if (sidebar && backdrop) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      }
     }
+
+    if (openBtn) openBtn.addEventListener('click', openSidebar);
+    if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+    if (backdrop) backdrop.addEventListener('click', closeSidebar);
   </script>
   {% block extra_scripts %}{% endblock %}
 </body>

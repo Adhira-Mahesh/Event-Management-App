@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Internal Server Error · CERAS{% endblock %}
+{% block title %}Internal Server Error · CERAS Portal{% endblock %}
 {% block content %}
 <div class="max-w-md mx-auto text-center py-16 px-4">
-  <div class="w-16 h-16 rounded-3xl bg-rose-100 text-rose-700 flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
-     
+  <div class="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100 shadow-subtle">
+    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
   </div>
-  <h1 class="font-display text-3xl font-bold text-slate-900 mb-2">Something went wrong</h1>
-  <p class="text-xs text-slate-500 mb-6 leading-relaxed">
+  <h1 class="font-display text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Something went wrong</h1>
+  <p class="text-xs sm:text-sm text-slate-500 mb-6 leading-relaxed">
     An unexpected error occurred. The system transaction was safely rolled back.
   </p>
   <a href="{{ url_for('dashboard.index') }}" 
-     class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all">
+     class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-5 py-2.5 rounded-xl shadow-sm transition-all">
     <span>← Return to Dashboard</span>
   </a>
 </div>

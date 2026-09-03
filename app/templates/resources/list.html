@@ -1,44 +1,48 @@
 {% extends "base.html" %}
-{% block title %}Facilities &amp; AV Resources · CERAS{% endblock %}
+{% block title %}Facilities &amp; AV Equipment · CERAS Portal{% endblock %}
 {% block content %}
 
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-6 border-b border-slate-200/80">
   <div>
-    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 mb-1">
-      <span></span> Campus Directory
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200 mb-2 shadow-subtle">
+      <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.75a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m6-9h.75m-.75 3h.75m-.75 3h.75"/></svg>
+      <span>Campus Inventory</span>
     </div>
-    <h1 class="text-3xl font-display font-bold text-slate-900">Facilities &amp; AV Equipment</h1>
-    <p class="text-xs text-slate-500 mt-0.5">Auditoriums, computer laboratories, projectors, audio kits, and broadcast equipment.</p>
+    <h1 class="text-2xl sm:text-3xl font-display font-bold text-slate-900 tracking-tight">Facilities &amp; AV Equipment</h1>
+    <p class="text-xs sm:text-sm text-slate-500 mt-1">Auditoriums, computer laboratories, projectors, audio kits, and broadcast equipment.</p>
   </div>
 
   {% if current_user.is_admin %}
     <a href="{{ url_for('resources.new_resource') }}" 
-       class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-md transition-all">
-      <span>+ Add Resource</span>
+       class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-4 py-2.5 rounded-xl shadow-sm shadow-blue-600/20 transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+      <span>Add Resource</span>
     </a>
   {% endif %}
 </div>
 
 <!-- Filters Bar -->
-<div class="bg-white rounded-2xl border border-slate-200 p-4 mb-6 shadow-sm">
-  <form method="get" class="flex flex-wrap items-center gap-4">
-    <div>
-      <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Resource Category</label>
-      <select name="type" onchange="this.form.submit()" class="text-xs border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <option value="">All Categories</option>
-        {% for t in types %}
-          <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
-        {% endfor %}
-      </select>
-    </div>
+<div class="bg-white rounded-2xl border border-slate-200 p-4 mb-6 shadow-card">
+  <form method="get" class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-wrap items-center gap-4">
+      <div>
+        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Resource Category</label>
+        <select name="type" onchange="this.form.submit()" class="text-xs border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">All Categories</option>
+          {% for t in types %}
+            <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <div>
-      <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Operational Status</label>
-      <select name="active" onchange="this.form.submit()" class="text-xs border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <option value="">All Statuses</option>
-        <option value="active" {% if active_filter == 'active' %}selected{% endif %}>Active Only</option>
-        <option value="inactive" {% if active_filter == 'inactive' %}selected{% endif %}>Inactive Only</option>
-      </select>
+      <div>
+        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Operational Status</label>
+        <select name="active" onchange="this.form.submit()" class="text-xs border border-slate-300 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">All Statuses</option>
+          <option value="active" {% if active_filter == 'active' %}selected{% endif %}>Active Only</option>
+          <option value="inactive" {% if active_filter == 'inactive' %}selected{% endif %}>Inactive Only</option>
+        </select>
+      </div>
     </div>
 
     {% if type_filter or active_filter %}
@@ -50,60 +54,54 @@
 </div>
 
 <!-- Resource Cards / Table -->
-<div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="bg-white rounded-2xl border border-slate-200 shadow-card overflow-hidden">
   <div class="overflow-x-auto">
     <table class="w-full text-left text-sm">
       <thead class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         <tr>
-          <th class="px-6 py-4">Resource Name</th>
-          <th class="px-6 py-4">Category</th>
-          <th class="px-6 py-4">Capacity</th>
-          <th class="px-6 py-4">Status</th>
+          <th class="px-6 py-3.5">Resource Name</th>
+          <th class="px-6 py-3.5">Category</th>
+          <th class="px-6 py-3.5">Capacity</th>
+          <th class="px-6 py-3.5">Status</th>
           {% if current_user.is_admin %}
-          <th class="px-6 py-4 text-right">Admin Controls</th>
+          <th class="px-6 py-3.5 text-right">Admin Controls</th>
           {% endif %}
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-100">
+      <tbody class="divide-y divide-slate-100 text-xs">
         {% for r in resources %}
         <tr class="hover:bg-slate-50/60 transition-colors">
           <td class="px-6 py-4 font-semibold text-slate-900">
-            <div class="flex items-center gap-2">
-              <span class="text-base">
-         {% if r.type == 'Auditorium' %} <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-     d="M4 21h16M5 21V6a2 2 0 012-2h10a2 2 0 012 2v15M8 8h8M8 12h8M8 16h3m2 0h3"/> </svg>
-
-{% elif r.type == 'Laboratory' %} <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-     d="M9 3v6l-5 9a2 2 0 001.7 3h12.6A2 2 0 0020 18l-5-9V3M8 3h8M7 16h10"/> </svg>
-
-{% elif r.type == 'Projector' %} <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <rect x="3" y="5" width="18" height="12" rx="2" stroke-width="1.8"/> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-     d="M8 21h8M12 17v4M7 9h.01M7 13h.01"/> </svg>
-
-{% elif r.type == 'Microphone' %} <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <rect x="9" y="3" width="6" height="11" rx="3" stroke-width="1.8"/> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-     d="M5 11a7 7 0 0014 0M12 18v3M8 21h8"/> </svg>
-
-{% elif r.type == 'Camera' %} <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-     d="M4 7h4l1.5-2h5L16 7h4a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1z"/> <circle cx="12" cy="13" r="3.5" stroke-width="1.8"/> </svg>
-
-{% else %} <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <rect x="3" y="4" width="18" height="14" rx="2" stroke-width="1.8"/> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-     d="M8 21h8M12 18v3"/> </svg>
-{% endif %}
-
+            <div class="flex items-center gap-2.5">
+              <span class="p-1.5 rounded-lg bg-slate-100 text-slate-600">
+                {% if r.type == 'Auditorium' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 21h16M5 21V6a2 2 0 012-2h10a2 2 0 012 2v15M8 8h8M8 12h8M8 16h3m2 0h3"/></svg>
+                {% elif r.type == 'Laboratory' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v6l-5 9a2 2 0 001.7 3h12.6A2 2 0 0020 18l-5-9V3M8 3h8M7 16h10"/></svg>
+                {% elif r.type == 'Projector' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8M12 17v4M7 9h.01M7 13h.01"/></svg>
+                {% elif r.type == 'Microphone' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 11a7 7 0 0014 0M12 18v3M8 21h8"/></svg>
+                {% elif r.type == 'Camera' %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h4l1.5-2h5L16 7h4a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                {% else %}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8M12 18v3"/></svg>
+                {% endif %}
               </span>
               <span>{{ r.name }}</span>
             </div>
           </td>
-          <td class="px-6 py-4 text-xs text-slate-600">
+          <td class="px-6 py-4 text-slate-600">
             <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-700">
               {{ r.type }}
             </span>
           </td>
-          <td class="px-6 py-4 text-xs text-slate-600">
+          <td class="px-6 py-4 text-slate-600">
             {{ r.capacity ~ ' seats / pax' if r.capacity else '— (Item/Equipment)' }}
           </td>
           <td class="px-6 py-4">
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {{ 'bg-emerald-100 text-emerald-800' if r.is_active else 'bg-slate-200 text-slate-700' }}">
-              <span class="w-1.5 h-1.5 rounded-full {{ 'bg-emerald-500' if r.is_active else 'bg-slate-500' }}"></span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold {{ 'bg-emerald-50 text-emerald-700 border border-emerald-200' if r.is_active else 'bg-slate-100 text-slate-600 border border-slate-200' }}">
+              <span class="w-1.5 h-1.5 rounded-full {{ 'bg-emerald-500' if r.is_active else 'bg-slate-400' }}"></span>
               {{ 'Active' if r.is_active else 'Deactivated' }}
             </span>
           </td>
@@ -111,7 +109,7 @@
           {% if current_user.is_admin %}
           <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
             <a href="{{ url_for('resources.edit_resource', resource_id=r.id) }}" 
-               class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
+               class="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline">
               Edit
             </a>
             <span class="text-slate-300">·</span>

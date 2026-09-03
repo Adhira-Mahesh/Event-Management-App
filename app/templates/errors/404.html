@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Page Not Found · CERAS{% endblock %}
+{% block title %}Page Not Found · CERAS Portal{% endblock %}
 {% block content %}
 <div class="max-w-md mx-auto text-center py-16 px-4">
-  <div class="w-16 h-16 rounded-3xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
-    🔍
+  <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4 border border-blue-100 shadow-subtle">
+    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
   </div>
-  <h1 class="font-display text-3xl font-bold text-slate-900 mb-2">Page Not Found</h1>
-  <p class="text-xs text-slate-500 mb-6 leading-relaxed">
-    The page you requested could not be located or may have been moved.
+  <h1 class="font-display text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Page Not Found</h1>
+  <p class="text-xs sm:text-sm text-slate-500 mb-6 leading-relaxed">
+    The page you requested could not be located or may have been relocated.
   </p>
   <a href="{{ url_for('dashboard.index') }}" 
-     class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-md shadow-indigo-600/20 transition-all">
+     class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-5 py-2.5 rounded-xl shadow-sm shadow-blue-600/20 transition-all">
     <span>← Return to Dashboard</span>
   </a>
 </div>
