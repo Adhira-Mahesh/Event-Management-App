@@ -20,15 +20,15 @@ with app.app_context():
     admin_user = User.query.filter_by(email="admin@college.edu").first()
     if not admin_user:
         admin_user = User(
-            name="Dr. Eleanor Vance",
-            email="admin@college.edu",
+            name="Adhira",
+            email="adhira24comp@student.mes.ac.in",
             department="Campus Administration & Facilities",
             role="admin",
             is_active=True,
         )
-        admin_user.set_password("admin123")
+        admin_user.set_password("123123")
         db.session.add(admin_user)
-        print("Created Admin user: admin@college.edu (password: admin123)")
+        print("Created Admin user: admin@college.edu (password: 123123)")
 
     student_1 = User.query.filter_by(email="alex.cs@college.edu").first()
     if not student_1:
